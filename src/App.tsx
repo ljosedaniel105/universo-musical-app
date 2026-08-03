@@ -1,38 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabase';
-import { SubirCancion } from './SubirCancion';
 import { ListaCanciones } from './ListaCanciones';
+import { SubirCancion } from './SubirCancion';
 import { PanelAdmin } from './PanelAdmin';
+import { Playlists } from './Playlists';
+import { Auth } from './Auth';
 
-export default function App() {
+export function App() {
+  const [session, setSession] = useState<any>(null);
+  const [cargando, setCargando] = useState(true);
   const [pestana, setPestana] = useState('descubrir');
-  const [usuario, setUsuario] = useState<any>(null);
-  const [esAdmin, setEsAdmin] = useState(false);
+
+  // Tu correo de administrador
+  const CORREO_ADMIN = 'ljosedaniel105@gmail.com'; 
 
   useEffect(() => {
-    // Obtener la sesión activa
+    // Verificar si hay sesión activa al entrar
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const user = session?.user ?? null;
-      setUsuario(user);
-      
-      // Validar si el usuario es Admin (puedes ajustar el correo si usas otro)
-      if (user && user.email === 'ljosedaniel105@gmail.com') {
-        setEsAdmin(true);
-      } else {
-        setEsAdmin(false);
-      }
+      setSession(session);
+      setCargando(false);
     });
 
-    // Escuchar cambios de estado de autenticación
+    // Escuchar cuando el usuario entra o sale de sesión
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
-      setUsuario(user);
-
-      if (user && user.email === 'ljosedaniel105@gmail.com') {
-        setEsAdmin(true);
-      } else {
-        setEsAdmin(false);
-      }
+      setSession(session);
+      setCargando(false);
     });
 
     return () => {
@@ -40,76 +32,149 @@ export default function App() {
     };
   }, []);
 
+  // Función definitiva para Cerrar Sesión y limpiar la memoria
+  const cerrarSesion = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Error cerrando sesión:', e);
+    }
+    // Borra la memoria local y reinicia la app
+    localStorage.clear();
+    sessionStorage.clear();
+    setSession(null);
+    window.location.href = window.location.origin;
+  };
+
+  if (cargando) {
+    return <div style={{ color: 'white', padding: '20px', backgroundColor: '#121212', minHeight: '100vh' }}>Cargando Universo Musical...</div>;
+  }
+
+  // SI NO HAY SESIÓN: Muestra la pantalla de Iniciar Sesión / Registrarse
+  if (!session) {
+    return <Auth />;
+  }
+
+  // Verificamos si el usuario actual es el administrador
+  const esAdmin = session?.user?.email === CORREO_ADMIN;
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#09090b', color: '#fff', fontFamily: 'sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121212', color: 'white' }}>
       
-      {/* BARRA LATERAL IZQUIERDA */}
-      <aside style={{ width: '260px', background: '#121214', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column', padding: '20px', position: 'fixed', height: '100vh', boxSizing: 'border-box' }}>
-        
-        {/* LOGO UNIVERSO MUSICAL */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '35px' }}>
-          <img 
-            src="https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png" 
-            alt="Logo" 
-            style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid #ff6600' }} 
-          />
-          <div>
-            <span style={{ fontWeight: '900', fontSize: '1.1rem', color: '#fff', display: 'block' }}>UNIVERSO</span>
-            <span style={{ fontSize: '0.65rem', color: '#ff6600', fontWeight: 'bold', letterSpacing: '2px' }}>MUSICAL</span>
+      {/* MENÚ LATERAL IZQUIERDO */}
+      <aside style={{ width: '240px', backgroundColor: '#1e1e1e', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #2a2a2a' }}>
+        <div>
+          {/* TÍTULO Y LOGO */}
+          <div style={{ marginBottom: '30px' }}>
+            <h2 style={{ fontSize: '18px', margin: 0, color: '#ff6b00', fontWeight: 'bold' }}>UNIVERSO 🎵</h2>
+            <p style={{ fontSize: '12px', margin: 0, color: '#ff6b00', letterSpacing: '2px' }}>MUSICAL</p>
           </div>
+          
+          {/* NAVEGACIÓN */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button 
+              onClick={() => setPestana('descubrir')} 
+              style={{ 
+                padding: '12px', 
+                textAlign: 'left', 
+                backgroundColor: pestana === 'descubrir' ? '#ff6b0022' : 'transparent', 
+                color: pestana === 'descubrir' ? '#ff6b00' : 'white', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                fontWeight: pestana === 'descubrir' ? 'bold' : 'normal'
+              }}
+            >
+              🏠 Descubrir
+            </button>
+
+            <button 
+              onClick={() => setPestana('playlists')} 
+              style={{ 
+                padding: '12px', 
+                textAlign: 'left', 
+                backgroundColor: pestana === 'playlists' ? '#ff6b0022' : 'transparent', 
+                color: pestana === 'playlists' ? '#ff6b00' : 'white', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                fontWeight: pestana === 'playlists' ? 'bold' : 'normal'
+              }}
+            >
+              🎧 Mis Playlists
+            </button>
+
+            <button 
+              onClick={() => setPestana('subir')} 
+              style={{ 
+                padding: '12px', 
+                textAlign: 'left', 
+                backgroundColor: pestana === 'subir' ? '#ff6b0022' : 'transparent', 
+                color: pestana === 'subir' ? '#ff6b00' : 'white', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                fontWeight: pestana === 'subir' ? 'bold' : 'normal'
+              }}
+            >
+              📁 Subir Música
+            </button>
+
+            {/* BOTÓN PANEL ADMIN: Solo aparece si entras con ljosedaniel105@gmail.com */}
+            {esAdmin && (
+              <button 
+                onClick={() => setPestana('admin')} 
+                style={{ 
+                  padding: '12px', 
+                  textAlign: 'left', 
+                  backgroundColor: pestana === 'admin' ? '#0055ff' : '#0055ff33', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  cursor: 'pointer', 
+                  marginTop: '15px',
+                  fontWeight: 'bold'
+                }}
+              >
+                🔑 Panel Admin
+              </button>
+            )}
+          </nav>
         </div>
 
-        {/* NAVEGACIÓN */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-          <button onClick={() => setPestana('descubrir')} style={{ background: pestana === 'descubrir' ? 'rgba(255, 102, 0, 0.15)' : 'transparent', color: pestana === 'descubrir' ? '#ff6600' : '#aaa', border: 'none', textAlign: 'left', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            🏠 Descubrir
-          </button>
-
-          <button onClick={() => setPestana('playlists')} style={{ background: pestana === 'playlists' ? 'rgba(255, 102, 0, 0.15)' : 'transparent', color: pestana === 'playlists' ? '#ff6600' : '#aaa', border: 'none', textAlign: 'left', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            🎶 Mis Playlists
-          </button>
-
-          <button onClick={() => setPestana('subir')} style={{ background: pestana === 'subir' ? 'rgba(255, 102, 0, 0.15)' : 'transparent', color: pestana === 'subir' ? '#ff6600' : '#aaa', border: 'none', textAlign: 'left', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            📁 Subir Música
-          </button>
-
-          {/* BOTÓN ADMIN PANEL (Visible para ljosedaniel105@gmail.com) */}
-          {esAdmin && (
-            <button onClick={() => setPestana('admin')} style={{ background: pestana === 'admin' ? 'rgba(255, 102, 0, 0.15)' : 'transparent', color: pestana === 'admin' ? '#ff6600' : '#aaa', border: 'none', textAlign: 'left', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-              🛡️ Admin Panel
-            </button>
-          )}
-        </nav>
-
-        {/* CERRAR SESIÓN */}
-        <div style={{ borderTop: '1px solid #222', paddingTop: '15px', marginTop: 'auto' }}>
-          {usuario && (
-            <div style={{ fontSize: '0.75rem', color: '#aaa', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              👤 {usuario.email}
-            </div>
-          )}
+        {/* PIE DEL MENÚ: CORREO Y BOTÓN CERRAR SESIÓN */}
+        <div style={{ borderTop: '1px solid #333', paddingTop: '15px' }}>
+          <p style={{ fontSize: '11px', color: '#888', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            👤 {session.user.email}
+          </p>
           <button 
-            onClick={() => supabase.auth.signOut()} 
-            style={{ width: '100%', background: 'rgba(255, 68, 68, 0.15)', color: '#ff4444', border: '1px solid rgba(255, 68, 68, 0.3)', padding: '10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            onClick={cerrarSesion} 
+            style={{ 
+              width: '100%', 
+              padding: '10px', 
+              backgroundColor: '#3a1a1a', 
+              color: '#ff4d4d', 
+              border: '1px solid #ff4d4d', 
+              borderRadius: '8px', 
+              cursor: 'pointer', 
+              fontWeight: 'bold' 
+            }}
           >
             🚪 Cerrar Sesión
           </button>
         </div>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <main style={{ marginLeft: '260px', padding: '40px', flex: 1, paddingBottom: '120px' }}>
-        {pestana === 'descubrir' && <ListaCanciones />}
+      {/* ÁREA PRINCIPAL */}
+      <main style={{ flex: 1, padding: '30px', backgroundColor: '#121212', overflowY: 'auto' }}>
+        {pestana === 'descubrir' && <ListaCanciones alReproducir={() => {}} esAdmin={esAdmin} />}
+        {pestana === 'playlists' && <Playlists />}
         {pestana === 'subir' && <SubirCancion />}
-        {pestana === 'admin' && <PanelAdmin />}
-        {pestana === 'playlists' && (
-          <div>
-            <h2 style={{ color: '#fff' }}>🎶 Mis Playlists</h2>
-            <p style={{ color: '#aaa' }}>Sección en desarrollo.</p>
-          </div>
-        )}
+        {pestana === 'admin' && esAdmin && <PanelAdmin />}
       </main>
 
     </div>
   );
 }
+
+export default App;
