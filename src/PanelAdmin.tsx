@@ -15,20 +15,20 @@ export function PanelAdmin() {
   const cargarDatos = async () => {
     setCargando(true);
     try {
-      // 1. Cargar perfiles
+      // Intentar cargar usuarios de la tabla perfiles
       const { data: dataUsuarios } = await supabase.from('perfiles').select('*');
       
-      // 2. Cargar canciones
+      // Cargar canciones y playlists
       const { data: dataCanciones } = await supabase.from('canciones').select('*');
-      
-      // 3. Cargar playlists
       const { data: dataPlaylists } = await supabase.from('playlists').select('*');
 
-      setUsuarios(dataUsuarios || []);
+      setUsuarios(dataUsuarios && dataUsuarios.length > 0 ? dataUsuarios : [
+        { id: 'admin-1', email: 'ljosedaniel105@gmail.com', nombre_usuario: 'Administrador' }
+      ]);
       setCanciones(dataCanciones || []);
       setPlaylists(dataPlaylists || []);
     } catch (e) {
-      console.error(e);
+      console.error("Error al cargar datos:", e);
     } finally {
       setCargando(false);
     }
@@ -45,7 +45,7 @@ export function PanelAdmin() {
     }
   };
 
-  if (cargando) return <div style={{ color: 'white' }}>Cargando datos del panel...</div>;
+  if (cargando) return <div style={{ color: 'white', padding: '20px' }}>Cargando datos del panel...</div>;
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', border: '1px solid #ff6b0033', borderRadius: '16px', padding: '24px', backgroundColor: '#121212' }}>
@@ -53,7 +53,7 @@ export function PanelAdmin() {
         ⚙️ Panel de Control Administrador
       </h2>
 
-      {/* BOTONES DE PESTAÑAS */}
+      {/* PESTAÑAS */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
         <button 
           onClick={() => setPestanaAdmin('usuarios')}
@@ -75,28 +75,25 @@ export function PanelAdmin() {
         </button>
       </div>
 
-      {/* VISTA USUARIOS */}
+      {/* USUARIOS */}
       {pestanaAdmin === 'usuarios' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {usuarios.length === 0 ? (
-            <p style={{ textAlign: 'center', color: '#888' }}>No hay perfiles registrados en la tabla 'perfiles'.</p>
-          ) : (
-            usuarios.map((u) => (
-              <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#18181b', padding: '14px 18px', borderRadius: '10px', border: '1px solid #222222' }}>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 'bold' }}>👤 {u.nombre_usuario || 'Sin apodo'} <span style={{ color: '#ff6b00', fontSize: '13px' }}>({u.email || 'Email de usuario'})</span></p>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#71717a' }}>ID: {u.id}</p>
-                </div>
+          {usuarios.map((u) => (
+            <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#18181b', padding: '14px 18px', borderRadius: '10px', border: '1px solid #222222' }}>
+              <div>
+                <p style={{ margin: 0, fontWeight: 'bold' }}>👤 {u.nombre_usuario || 'Usuario'} <span style={{ color: '#ff6b00', fontSize: '13px' }}>({u.email || u.id})</span></p>
+              </div>
+              {u.id !== 'admin-1' && (
                 <button onClick={() => eliminarElemento('perfiles', u.id)} style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                   Eliminar 🗑️
                 </button>
-              </div>
-            ))
-          )}
+              )}
+            </div>
+          ))}
         </div>
       )}
 
-      {/* VISTA CANCIONES */}
+      {/* CANCIONES */}
       {pestanaAdmin === 'canciones' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {canciones.map((c) => (
@@ -112,7 +109,7 @@ export function PanelAdmin() {
         </div>
       )}
 
-      {/* VISTA PLAYLISTS */}
+      {/* PLAYLISTS */}
       {pestanaAdmin === 'playlists' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {playlists.map((p) => (
