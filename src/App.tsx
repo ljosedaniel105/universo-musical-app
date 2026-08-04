@@ -1,27 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from './supabase';
-import { ListaCanciones } from './ListaCanciones';
-import { SubirCancion } from './SubirCancion';
-import { PanelAdmin } from './PanelAdmin';
-import { Playlists } from './Playlists';
-import { Auth } from './Auth';
+import React, { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
+import ListaCanciones from './ListaCanciones';
+import SubirCancion from './SubirCancion';
+import PanelAdmin from './PanelAdmin';
 
-export function App() {
+export default function App() {
   const [session, setSession] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
-  const [pestana, setPestana] = useState('descubrir');
+  const [seccionActual, setSeccionActual] = useState<'descubrir' | 'playlists' | 'subir' | 'admin'>('descubrir');
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [esRegistro, setEsRegistro] = useState(false);
+  const [mensajeError, setMensajeError] = useState('');
   const [cancionActual, setCancionActual] = useState<any>(null);
-
-  // Estados del reproductor de audio
-  const [reproduciendo, setReproduciendo] = useState(false);
-  const [progreso, setProgreso] = useState(0);
-  const [duracion, setDuracion] = useState(0);
-  const [tiempoActual, setTiempoActual] = useState(0);
-  const [volumen, setVolumen] = useState(1);
-  const [mostrarMenuOpciones, setMostrarMenuOpciones] = useState(false);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const CORREO_ADMIN = 'ljosedaniel105@gmail.com';
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -29,381 +20,164 @@ export function App() {
       setCargando(false);
     });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setCargando(false);
     });
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (cancionActual && audioRef.current) {
-      audioRef.current.play().then(() => {
-        setReproduciendo(true);
-      }).catch(e => console.error("Error al reproducir:", e));
-    }
-  }, [cancionActual]);
-
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-    if (reproduciendo) {
-      audioRef.current.pause();
-      setReproduciendo(false);
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMensajeError('');
+    
+    if (esRegistro) {
+      const { data, error } = await supabase.auth.signUp({
+        email: emailInput,
+        password: passwordInput,
+      });
+      if (error) {
+        setMensajeError(error.message);
+      } else if (data.user) {
+        await supabase.from('perfiles').insert([
+          { id: data.user.id, email: data.user.email, nombre_usuario: data.user.email?.split('@')[0] }
+        ]);
+        alert('¡Registro exitoso! Ya puedes iniciar sesión.');
+        setEsRegistro(false);
+      }
     } else {
-      audioRef.current.play();
-      setReproduciendo(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailInput,
+        password: passwordInput,
+      });
+      if (error) setMensajeError(error.message);
     }
   };
 
-  const manejarTiempoUpdate = () => {
-    if (!audioRef.current) return;
-    const actual = audioRef.current.currentTime;
-    const total = audioRef.current.duration || 0;
-    setTiempoActual(actual);
-    setDuracion(total);
-    setProgreso(total > 0 ? (actual / total) * 100 : 0);
-  };
-
-  const cambiarProgreso = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const nuevoPorcentaje = Number(e.target.value);
-    if (audioRef.current && duracion) {
-      const nuevoTiempo = (nuevoPorcentaje / 100) * duracion;
-      audioRef.current.currentTime = nuevoTiempo;
-      setProgreso(nuevoPorcentaje);
-    }
-  };
-
-  const cambiarVolumen = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
-    setVolumen(val);
-    if (audioRef.current) {
-      audioRef.current.volume = val;
-    }
-  };
-
-  const descargarCancion = () => {
-    if (!cancionActual?.url_archivo) return;
-    const a = document.createElement('a');
-    a.href = cancionActual.url_archivo;
-    a.download = `${cancionActual.titulo || 'cancion'}.mp3`;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setMostrarMenuOpciones(false);
-  };
-
-  const unirAPlaylist = () => {
-    setPestana('playlists');
-    setMostrarMenuOpciones(false);
-  };
-
-  const formatearTiempo = (segundos: number) => {
-    if (isNaN(segundos)) return "0:00";
-    const mins = Math.floor(segundos / 60);
-    const segs = Math.floor(segundos % 60);
-    return `${mins}:${segs < 10 ? '0' : ''}${segs}`;
-  };
-
-  const cerrarSesion = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {
-      console.error('Error cerrando sesión:', e);
-    }
-    localStorage.clear();
-    sessionStorage.clear();
-    setSession(null);
-    window.location.href = window.location.origin;
+  const handleCerrarSesion = async () => {
+    await supabase.auth.signOut();
+    setSeccionActual('descubrir');
   };
 
   if (cargando) {
     return (
-      <div style={{ color: 'white', backgroundColor: '#000000', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 'bold' }}>
-        🎵 Cargando Universo Musical...
+      <div style={{ minHeight: '100vh', backgroundColor: '#121214', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <h2>Cargando Universo Musical...</h2>
       </div>
     );
   }
 
+  // Pantalla de Iniciar Sesión / Registro
   if (!session) {
-    return <Auth />;
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#121214', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ backgroundColor: '#1a1a1e', padding: '30px', borderRadius: '16px', width: '100%', maxWidth: '400px', border: '1px solid #2a2a30', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#ff6b00' }}>
+            {esRegistro ? '🔑 Crear Cuenta' : '🔑 Iniciar Sesión'}
+          </h2>
+          
+          {mensajeError && (
+            <div style={{ backgroundColor: 'rgba(255, 0, 0, 0.2)', color: '#ff4d4d', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '14px', textAlign: 'center' }}>
+              {mensajeError}
+            </div>
+          )}
+
+          <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#ccc' }}>✉️ Correo Electrónico:</label>
+              <input 
+                type="email" 
+                required 
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="correo@ejemplo.com"
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#ccc' }}>🔒 Contraseña:</label>
+              <input 
+                type="password" 
+                required 
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="••••••••"
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}
+            >
+              {esRegistro ? 'Registrarse 🚀' : 'Entrar 🔒'}
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#aaa' }}>
+            {esRegistro ? '¿Ya tienes una cuenta?' : '¿No tienes cuenta aún?'} {' '}
+            <button 
+              onClick={() => { setEsRegistro(!esRegistro); setMensajeError(''); }}
+              style={{ background: 'none', border: 'none', color: '#ff6b00', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              {esRegistro ? 'Inicia Sesión aquí' : 'Regístrate aquí'}
+            </button>
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  const esAdmin = session?.user?.email === CORREO_ADMIN;
-
+  // Pantalla Principal (Barra Lateral + Contenido)
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#0a0a0a', color: 'white' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#121214', color: 'white', fontFamily: 'sans-serif' }}>
       
       {/* BARRA LATERAL */}
-      <aside style={{ width: '260px', backgroundColor: '#111111', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #222222', flexShrink: 0 }}>
+      <div style={{ width: '260px', backgroundColor: '#18181c', borderRight: '1px solid #2a2a30', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px' }}>
         <div>
-          {/* LOGO SUPERIOR IZQUIERDO Y NOMBRE COMPLETO */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '36px', paddingLeft: '8px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }}>
-              🎵
-            </div>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '17px', fontWeight: '900', color: 'white', letterSpacing: '0.5px', lineHeight: '1.2' }}>
-                UNIVERSO <span style={{ color: '#ff6b00' }}>MUSICAL</span>
-              </h1>
-            </div>
+          {/* LOGO DE TU APLICACIÓN */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '35px' }}>
+            <img 
+              src="https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png" 
+              alt="Logo Universo Musical" 
+              style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'contain', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }} 
+            />
+            <h1 style={{ fontSize: '18px', fontWeight: 'bold', letterSpacing: '1px', margin: 0, color: '#ffffff' }}>
+              UNIVERSO <span style={{ color: '#ff6b00' }}>MUSICAL</span>
+            </h1>
           </div>
 
-          {/* BOTONES DE NAVEGACIÓN A LA IZQUIERDA */}
+          {/* MENÚ DE NAVEGACIÓN */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button 
-              onClick={() => setPestana('descubrir')} 
+              onClick={() => setSeccionActual('descubrir')}
               style={{ 
-                padding: '12px 16px', 
-                textAlign: 'left', 
-                backgroundColor: pestana === 'descubrir' ? '#ff6b0022' : '#18181b', 
-                color: pestana === 'descubrir' ? '#ff6b00' : '#e4e4e7', 
-                border: pestana === 'descubrir' ? '1px solid #ff6b0088' : '1px solid #27272a',
-                borderRadius: '10px', 
-                cursor: 'pointer',
-                fontWeight: pestana === 'descubrir' ? 'bold' : '600',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s ease'
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
+                backgroundColor: seccionActual === 'descubrir' ? '#26262e' : 'transparent', 
+                color: seccionActual === 'descubrir' ? '#ff6b00' : '#a0a0ab', 
+                fontWeight: seccionActual === 'descubrir' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' 
               }}
             >
               🏠 Descubrir
             </button>
 
             <button 
-              onClick={() => setPestana('playlists')} 
+              onClick={() => setSeccionActual('playlists')}
               style={{ 
-                padding: '12px 16px', 
-                textAlign: 'left', 
-                backgroundColor: pestana === 'playlists' ? '#ff6b0022' : '#18181b', 
-                color: pestana === 'playlists' ? '#ff6b00' : '#e4e4e7', 
-                border: pestana === 'playlists' ? '1px solid #ff6b0088' : '1px solid #27272a',
-                borderRadius: '10px', 
-                cursor: 'pointer',
-                fontWeight: pestana === 'playlists' ? 'bold' : '600',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s ease'
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
+                backgroundColor: seccionActual === 'playlists' ? '#26262e' : 'transparent', 
+                color: seccionActual === 'playlists' ? '#ff6b00' : '#a0a0ab', 
+                fontWeight: seccionActual === 'playlists' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' 
               }}
             >
               🎧 Mis Playlists
             </button>
 
             <button 
-              onClick={() => setPestana('subir')} 
+              onClick={() => setSeccionActual('subir')}
               style={{ 
-                padding: '12px 16px', 
-                textAlign: 'left', 
-                backgroundColor: pestana === 'subir' ? '#ff6b0022' : '#18181b', 
-                color: pestana === 'subir' ? '#ff6b00' : '#e4e4e7', 
-                border: pestana === 'subir' ? '1px solid #ff6b0088' : '1px solid #27272a',
-                borderRadius: '10px', 
-                cursor: 'pointer',
-                fontWeight: pestana === 'subir' ? 'bold' : '600',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              📁 Subir Música
-            </button>
-
-            {esAdmin && (
-              <button 
-                onClick={() => setPestana('admin')} 
-                style={{ 
-                  padding: '12px 16px', 
-                  textAlign: 'left', 
-                  backgroundColor: pestana === 'admin' ? '#ff6b0033' : '#18181b', 
-                  color: pestana === 'admin' ? '#ff6b00' : '#e4e4e7', 
-                  border: pestana === 'admin' ? '1px solid #ff6b00' : '1px solid #27272a',
-                  borderRadius: '10px', 
-                  cursor: 'pointer', 
-                  marginTop: '12px',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  boxShadow: pestana === 'admin' ? '0 0 10px rgba(255,107,0,0.2)' : 'none'
-                }}
-              >
-                🔑 Panel Admin
-              </button>
-            )}
-          </nav>
-        </div>
-
-        {/* CERRAR SESIÓN */}
-        <div style={{ borderTop: '1px solid #222222', paddingTop: '16px' }}>
-          <p style={{ fontSize: '12px', color: '#888888', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            👤 {session.user.email}
-          </p>
-          <button 
-            onClick={cerrarSesion} 
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              backgroundColor: '#1f1315', 
-              color: '#ef4444', 
-              border: '1px solid #ef444433', 
-              borderRadius: '8px', 
-              cursor: 'pointer', 
-              fontWeight: 'bold',
-              fontSize: '13px'
-            }}
-          >
-            🚪 Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
-      {/* CONTENIDO PRINCIPAL */}
-      <main style={{ flex: 1, padding: '32px', backgroundColor: '#0a0a0a', overflowY: 'auto', paddingBottom: cancionActual ? '120px' : '32px' }}>
-        {pestana === 'descubrir' && (
-          <ListaCanciones 
-            alReproducir={(cancion: any) => setCancionActual(cancion)} 
-            esAdmin={esAdmin} 
-          />
-        )}
-        {pestana === 'playlists' && <Playlists />}
-        {pestana === 'subir' && <SubirCancion />}
-        {pestana === 'admin' && esAdmin && <PanelAdmin />}
-      </main>
-
-      {/* BARRA INFERIOR DE REPRODUCCIÓN (CONSERVADA EXACTAMENTE IGUAL) */}
-      {cancionActual && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: '#000000',
-          borderTop: '1px solid #ff6b0055',
-          padding: '12px 28px',
-          display: 'flex',
-          alignItems: 'center',
-          justify: 'space-between',
-          zIndex: 1000,
-          boxShadow: '0 -6px 24px rgba(0,0,0,0.95)'
-        }}>
-          <audio 
-            ref={audioRef}
-            src={cancionActual.url_archivo}
-            onTimeUpdate={manejarTiempoUpdate}
-            onEnded={() => setReproduciendo(false)}
-          />
-
-          {/* DETALLES DE CANCIÓN */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '260px' }}>
-            <img 
-              src={cancionActual.url_imagen || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150'} 
-              onError={(e: any) => { e.target.src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150'; }}
-              alt={cancionActual.titulo} 
-              style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} 
-            />
-            <div style={{ overflow: 'hidden' }}>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {cancionActual.titulo}
-              </p>
-              <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#a1a1aa', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {cancionActual.artista}
-              </p>
-            </div>
-          </div>
-
-          {/* CONTROLES Y LÍNEA NARANJA */}
-          <div style={{ flex: 1, maxWidth: '520px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            <button 
-              onClick={togglePlay} 
-              style={{ backgroundColor: '#ff6b00', color: 'white', border: 'none', width: '42px', height: '42px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 10px rgba(255,107,0,0.4)' }}
-            >
-              {reproduciendo ? '⏸' : '▶'}
-            </button>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
-              <span style={{ fontSize: '11px', color: '#888', minWidth: '35px', textAlign: 'right' }}>{formatearTiempo(tiempoActual)}</span>
-              <input 
-                type="range" 
-                min="0" 
-                max="100" 
-                value={progreso} 
-                onChange={cambiarProgreso} 
-                style={{ flex: 1, accentColor: '#ff6b00', cursor: 'pointer', height: '4px' }} 
-              />
-              <span style={{ fontSize: '11px', color: '#888', minWidth: '35px' }}>{formatearTiempo(duracion)}</span>
-            </div>
-          </div>
-
-          {/* VOLUMEN Y MENÚ DE 3 PUNTOS */}
-          <div style={{ width: '260px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '14px', position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px' }}>🔊</span>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.01" 
-                value={volumen} 
-                onChange={cambiarVolumen} 
-                style={{ accentColor: '#ff6b00', cursor: 'pointer', width: '75px', height: '4px' }} 
-              />
-            </div>
-
-            {/* BOTÓN 3 PUNTOS */}
-            <button 
-              onClick={() => setMostrarMenuOpciones(!mostrarMenuOpciones)}
-              style={{ backgroundColor: '#222222', color: 'white', border: 'none', width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              ⋮
-            </button>
-
-            {/* DESPLEGABLE DE OPCIONES */}
-            {mostrarMenuOpciones && (
-              <div style={{
-                position: 'absolute',
-                bottom: '50px',
-                right: '0',
-                backgroundColor: '#18181b',
-                border: '1px solid #ff6b0044',
-                borderRadius: '10px',
-                padding: '6px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
-                width: '170px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-                zIndex: 1001
-              }}>
-                <button 
-                  onClick={unirAPlaylist}
-                  style={{ backgroundColor: 'transparent', color: 'white', border: 'none', padding: '10px 12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  ➕ Unir a Playlist
-                </button>
-                <button 
-                  onClick={descargarCancion}
-                  style={{ backgroundColor: 'transparent', color: 'white', border: 'none', padding: '10px 12px', textAlign: 'left', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  📥 Descargar
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-    </div>
-  );
-}
-
-export default App;
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
+                backgroundColor: seccionActual === 'subir' ? '#26262e' : 'transparent', 
+                color: seccionActual === 'subir' ? '#ff6b00' : '#a0a0ab', 
+                fontWeight: seccionActual === 'subir' ? 'bold' : '
