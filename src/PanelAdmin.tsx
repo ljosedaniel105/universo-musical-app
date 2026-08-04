@@ -15,8 +15,13 @@ export function PanelAdmin() {
   const cargarDatos = async () => {
     setCargando(true);
     try {
+      // 1. Cargar perfiles
       const { data: dataUsuarios } = await supabase.from('perfiles').select('*');
+      
+      // 2. Cargar canciones
       const { data: dataCanciones } = await supabase.from('canciones').select('*');
+      
+      // 3. Cargar playlists
       const { data: dataPlaylists } = await supabase.from('playlists').select('*');
 
       setUsuarios(dataUsuarios || []);
@@ -43,12 +48,12 @@ export function PanelAdmin() {
   if (cargando) return <div style={{ color: 'white' }}>Cargando datos del panel...</div>;
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', border: '1px solid #ff6b0044', borderRadius: '16px', padding: '24px', backgroundColor: '#121212' }}>
-      <h2 style={{ textAlign: 'center', color: '#ff6b00', fontSize: '22px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', border: '1px solid #ff6b0033', borderRadius: '16px', padding: '24px', backgroundColor: '#121212' }}>
+      <h2 style={{ textAlign: 'center', color: '#ff6b00', fontSize: '22px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
         ⚙️ Panel de Control Administrador
       </h2>
 
-      {/* PESTAÑAS */}
+      {/* BOTONES DE PESTAÑAS */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
         <button 
           onClick={() => setPestanaAdmin('usuarios')}
@@ -73,17 +78,21 @@ export function PanelAdmin() {
       {/* VISTA USUARIOS */}
       {pestanaAdmin === 'usuarios' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {usuarios.map((u) => (
-            <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#18181b', padding: '14px 18px', borderRadius: '10px', border: '1px solid #222222' }}>
-              <div>
-                <p style={{ margin: 0, fontWeight: 'bold' }}>👤 {u.nombre_usuario || 'Sin apodo'} <span style={{ color: '#ff6b00', fontSize: '13px' }}>({u.email})</span></p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#71717a' }}>Registrado el: {new Date(u.created_at).toLocaleDateString()}</p>
+          {usuarios.length === 0 ? (
+            <p style={{ textAlign: 'center', color: '#888' }}>No hay perfiles registrados en la tabla 'perfiles'.</p>
+          ) : (
+            usuarios.map((u) => (
+              <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#18181b', padding: '14px 18px', borderRadius: '10px', border: '1px solid #222222' }}>
+                <div>
+                  <p style={{ margin: 0, fontWeight: 'bold' }}>👤 {u.nombre_usuario || 'Sin apodo'} <span style={{ color: '#ff6b00', fontSize: '13px' }}>({u.email || 'Email de usuario'})</span></p>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#71717a' }}>ID: {u.id}</p>
+                </div>
+                <button onClick={() => eliminarElemento('perfiles', u.id)} style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                  Eliminar 🗑️
+                </button>
               </div>
-              <button onClick={() => eliminarElemento('perfiles', u.id)} style={{ backgroundColor: '#dc2626', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-                Eliminar 🗑️
-              </button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
