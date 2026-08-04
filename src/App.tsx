@@ -10,18 +10,17 @@ export function App() {
   const [session, setSession] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
   const [pestana, setPestana] = useState('descubrir');
+  const [cancionActual, setCancionActual] = useState<any>(null);
 
-  // Tu correo de administrador
+  // Correo del Administrador
   const CORREO_ADMIN = 'ljosedaniel105@gmail.com'; 
 
   useEffect(() => {
-    // Verificar si hay sesión activa al entrar
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setCargando(false);
     });
 
-    // Escuchar cuando el usuario entra o sale de sesión
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setCargando(false);
@@ -32,14 +31,12 @@ export function App() {
     };
   }, []);
 
-  // Función definitiva para Cerrar Sesión y limpiar la memoria
   const cerrarSesion = async () => {
     try {
       await supabase.auth.signOut();
     } catch (e) {
       console.error('Error cerrando sesión:', e);
     }
-    // Borra la memoria local y reinicia la app
     localStorage.clear();
     sessionStorage.clear();
     setSession(null);
@@ -47,30 +44,30 @@ export function App() {
   };
 
   if (cargando) {
-    return <div style={{ color: 'white', padding: '20px', backgroundColor: '#121212', minHeight: '100vh' }}>Cargando Universo Musical...</div>;
+    return (
+      <div style={{ color: 'white', padding: '20px', backgroundColor: '#121212', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        Cargando Universo Musical...
+      </div>
+    );
   }
 
-  // SI NO HAY SESIÓN: Muestra la pantalla de Iniciar Sesión / Registrarse
   if (!session) {
     return <Auth />;
   }
 
-  // Verificamos si el usuario actual es el administrador
   const esAdmin = session?.user?.email === CORREO_ADMIN;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121212', color: 'white' }}>
       
-      {/* MENÚ LATERAL IZQUIERDO */}
-      <aside style={{ width: '240px', backgroundColor: '#1e1e1e', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #2a2a2a' }}>
+      {/* MENÚ LATERAL */}
+      <aside style={{ width: '240px', backgroundColor: '#181818', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #282828' }}>
         <div>
-          {/* TÍTULO Y LOGO */}
           <div style={{ marginBottom: '30px' }}>
-            <h2 style={{ fontSize: '18px', margin: 0, color: '#ff6b00', fontWeight: 'bold' }}>UNIVERSO 🎵</h2>
-            <p style={{ fontSize: '12px', margin: 0, color: '#ff6b00', letterSpacing: '2px' }}>MUSICAL</p>
+            <h2 style={{ fontSize: '20px', margin: 0, color: '#ff6b00', fontWeight: 'bold' }}>UNIVERSO 🎵</h2>
+            <p style={{ fontSize: '11px', margin: 0, color: '#ff6b00', letterSpacing: '2px' }}>MUSICAL</p>
           </div>
           
-          {/* NAVEGACIÓN */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <button 
               onClick={() => setPestana('descubrir')} 
@@ -120,7 +117,6 @@ export function App() {
               📁 Subir Música
             </button>
 
-            {/* BOTÓN PANEL ADMIN: Solo aparece si entras con ljosedaniel105@gmail.com */}
             {esAdmin && (
               <button 
                 onClick={() => setPestana('admin')} 
@@ -142,7 +138,7 @@ export function App() {
           </nav>
         </div>
 
-        {/* PIE DEL MENÚ: CORREO Y BOTÓN CERRAR SESIÓN */}
+        {/* PIE DEL MENÚ */}
         <div style={{ borderTop: '1px solid #333', paddingTop: '15px' }}>
           <p style={{ fontSize: '11px', color: '#888', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             👤 {session.user.email}
@@ -165,13 +161,52 @@ export function App() {
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL */}
-      <main style={{ flex: 1, padding: '30px', backgroundColor: '#121212', overflowY: 'auto' }}>
-        {pestana === 'descubrir' && <ListaCanciones alReproducir={() => {}} esAdmin={esAdmin} />}
+      {/* VISTAS PRINCIPALES */}
+      <main style={{ flex: 1, padding: '30px', backgroundColor: '#121212', overflowY: 'auto', paddingBottom: cancionActual ? '100px' : '30px' }}>
+        {pestana === 'descubrir' && (
+          <ListaCanciones 
+            alReproducir={(cancion: any) => setCancionActual(cancion)} 
+            esAdmin={esAdmin} 
+          />
+        )}
         {pestana === 'playlists' && <Playlists />}
         {pestana === 'subir' && <SubirCancion />}
         {pestana === 'admin' && esAdmin && <PanelAdmin />}
       </main>
+
+      {/* REPRODUCTOR DE AUDIO INFERIOR */}
+      {cancionActual && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: '#181818',
+          borderTop: '1px solid #ff6b00',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justify: 'space-between',
+          zIndex: 1000
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            {cancionActual.url_imagen && (
+              <img src={cancionActual.url_imagen} alt={cancionActual.titulo} style={{ width: '45px', height: '45px', borderRadius: '6px', objectFit: 'cover' }} />
+            )}
+            <div>
+              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: 'white' }}>{cancionActual.titulo}</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#aaa' }}>{cancionActual.artista}</p>
+            </div>
+          </div>
+
+          <audio 
+            controls 
+            autoPlay 
+            src={cancionActual.url_archivo} 
+            style={{ minWidth: '300px', outline: 'none' }} 
+          />
+        </div>
+      )}
 
     </div>
   );
