@@ -136,12 +136,16 @@ export default function App() {
       {/* BARRA LATERAL */}
       <div style={{ width: '260px', backgroundColor: '#18181c', borderRight: '1px solid #2a2a30', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px' }}>
         <div>
-          {/* LOGO DE TU APLICACIÓN */}
+          {/* LOGO DE TU APLICACIÓN CON RESPALDO */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '35px' }}>
             <img 
               src="https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png" 
               alt="Logo Universo Musical" 
               style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'contain', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }} 
+              onError={(e) => {
+                // Si la imagen de Supabase no carga, se usará un logo alternativo oficial
+                (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png';
+              }}
             />
             <h1 style={{ fontSize: '18px', fontWeight: 'bold', letterSpacing: '1px', margin: 0, color: '#ffffff' }}>
               UNIVERSO <span style={{ color: '#ff6b00' }}>MUSICAL</span>
@@ -218,7 +222,7 @@ export default function App() {
       {/* ÁREA DE CONTENIDO PRINCIPAL */}
       <div style={{ flex: 1, padding: '30px', paddingBottom: '110px', overflowY: 'auto' }}>
         {seccionActual === 'descubrir' && <ListaCanciones alSeleccionarCancion={setCancionActual} />}
-        {seccionActual === 'playlists' && <h2>🎧 Seccion de Playlists (En desarrollo)</h2>}
+        {seccionActual === 'playlists' && <h2>🎧 Sección de Playlists (En desarrollo)</h2>}
         {seccionActual === 'subir' && <SubirCancion />}
         {seccionActual === 'admin' && <PanelAdmin />}
       </div>
