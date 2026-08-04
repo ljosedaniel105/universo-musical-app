@@ -5,6 +5,8 @@ export default function ListaCanciones({ alSeleccionarCancion }: { alSeleccionar
   const [canciones, setCanciones] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
 
+  const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
+
   useEffect(() => {
     cargarCanciones();
   }, []);
@@ -31,11 +33,12 @@ export default function ListaCanciones({ alSeleccionarCancion }: { alSeleccionar
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
           {canciones.map((cancion) => {
-            // DETECTA SI LA PORTADA ESTÁ EN portada_url O EN url_portada
-            const portadaReal = 
-              cancion.portada_url || 
-              cancion.url_portada || 
-              'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
+            // Verifica si la URL parece una imagen válida
+            let portadaInicial = cancion.portada_url || cancion.url_portada;
+            
+            if (!portadaInicial || portadaInicial.includes('.mp3') || portadaInicial.trim() === '') {
+              portadaInicial = PORTADA_DEFAULT;
+            }
 
             return (
               <div 
@@ -43,8 +46,12 @@ export default function ListaCanciones({ alSeleccionarCancion }: { alSeleccionar
                 style={{ backgroundColor: '#18181c', borderRadius: '12px', padding: '15px', border: '1px solid #2a2a30', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'center' }}
               >
                 <img 
-                  src={portadaReal} 
+                  src={portadaInicial} 
                   alt={cancion.titulo} 
+                  onError={(e: any) => {
+                    // Si la imagen falla al cargar, pon el fondo por defecto
+                    e.target.src = PORTADA_DEFAULT;
+                  }}
                   style={{ width: '100%', height: '180px', borderRadius: '8px', objectFit: 'cover' }}
                 />
                 <div>
