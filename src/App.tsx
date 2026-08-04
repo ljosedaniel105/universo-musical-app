@@ -12,8 +12,7 @@ export function App() {
   const [pestana, setPestana] = useState('descubrir');
   const [cancionActual, setCancionActual] = useState<any>(null);
 
-  // Correo del Administrador
-  const CORREO_ADMIN = 'ljosedaniel105@gmail.com'; 
+  const CORREO_ADMIN = 'ljosedaniel105@gmail.com';
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,7 +44,7 @@ export function App() {
 
   if (cargando) {
     return (
-      <div style={{ color: 'white', padding: '20px', backgroundColor: '#121212', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ color: 'white', backgroundColor: '#121214', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Cargando Universo Musical...
       </div>
     );
@@ -58,28 +57,32 @@ export function App() {
   const esAdmin = session?.user?.email === CORREO_ADMIN;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121212', color: 'white' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121214', color: 'white' }}>
       
       {/* MENÚ LATERAL */}
-      <aside style={{ width: '240px', backgroundColor: '#181818', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #282828' }}>
+      <aside style={{ width: '250px', backgroundColor: '#18181c', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #28282e', flexShrink: 0 }}>
         <div>
-          <div style={{ marginBottom: '30px' }}>
-            <h2 style={{ fontSize: '20px', margin: 0, color: '#ff6b00', fontWeight: 'bold' }}>UNIVERSO 🎵</h2>
-            <p style={{ fontSize: '11px', margin: 0, color: '#ff6b00', letterSpacing: '2px' }}>MUSICAL</p>
+          {/* LOGO UNIVERSO MUSICAL */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px', paddingLeft: '8px' }}>
+            <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#ff6b00', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              UNIVERSO <span style={{ color: '#8b5cf6' }}>🎵</span>
+            </div>
           </div>
-          
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+          {/* BOTONES DE NAVEGACIÓN */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button 
               onClick={() => setPestana('descubrir')} 
               style={{ 
-                padding: '12px', 
+                padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'descubrir' ? '#ff6b0022' : 'transparent', 
-                color: pestana === 'descubrir' ? '#ff6b00' : 'white', 
+                backgroundColor: pestana === 'descubrir' ? '#26262e' : 'transparent', 
+                color: pestana === 'descubrir' ? '#ff6b00' : '#a1a1aa', 
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: 'pointer',
-                fontWeight: pestana === 'descubrir' ? 'bold' : 'normal'
+                fontWeight: pestana === 'descubrir' ? 'bold' : 'normal',
+                fontSize: '14px'
               }}
             >
               🏠 Descubrir
@@ -88,14 +91,15 @@ export function App() {
             <button 
               onClick={() => setPestana('playlists')} 
               style={{ 
-                padding: '12px', 
+                padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'playlists' ? '#ff6b0022' : 'transparent', 
-                color: pestana === 'playlists' ? '#ff6b00' : 'white', 
+                backgroundColor: pestana === 'playlists' ? '#26262e' : 'transparent', 
+                color: pestana === 'playlists' ? '#ff6b00' : '#a1a1aa', 
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: 'pointer',
-                fontWeight: pestana === 'playlists' ? 'bold' : 'normal'
+                fontWeight: pestana === 'playlists' ? 'bold' : 'normal',
+                fontSize: '14px'
               }}
             >
               🎧 Mis Playlists
@@ -104,14 +108,15 @@ export function App() {
             <button 
               onClick={() => setPestana('subir')} 
               style={{ 
-                padding: '12px', 
+                padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'subir' ? '#ff6b0022' : 'transparent', 
-                color: pestana === 'subir' ? '#ff6b00' : 'white', 
+                backgroundColor: pestana === 'subir' ? '#26262e' : 'transparent', 
+                color: pestana === 'subir' ? '#ff6b00' : '#a1a1aa', 
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: 'pointer',
-                fontWeight: pestana === 'subir' ? 'bold' : 'normal'
+                fontWeight: pestana === 'subir' ? 'bold' : 'normal',
+                fontSize: '14px'
               }}
             >
               📁 Subir Música
@@ -121,15 +126,16 @@ export function App() {
               <button 
                 onClick={() => setPestana('admin')} 
                 style={{ 
-                  padding: '12px', 
+                  padding: '12px 16px', 
                   textAlign: 'left', 
-                  backgroundColor: pestana === 'admin' ? '#0055ff' : '#0055ff33', 
+                  backgroundColor: pestana === 'admin' ? '#0066ff' : '#0055ff22', 
                   color: 'white', 
                   border: 'none', 
-                  borderRadius: '8px', 
+                  borderRadius: '10px', 
                   cursor: 'pointer', 
-                  marginTop: '15px',
-                  fontWeight: 'bold'
+                  marginTop: '12px',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
                 }}
               >
                 🔑 Panel Admin
@@ -138,9 +144,9 @@ export function App() {
           </nav>
         </div>
 
-        {/* PIE DEL MENÚ */}
-        <div style={{ borderTop: '1px solid #333', paddingTop: '15px' }}>
-          <p style={{ fontSize: '11px', color: '#888', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {/* CERRAR SESIÓN */}
+        <div style={{ borderTop: '1px solid #28282e', paddingTop: '16px' }}>
+          <p style={{ fontSize: '12px', color: '#71717a', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             👤 {session.user.email}
           </p>
           <button 
@@ -148,12 +154,13 @@ export function App() {
             style={{ 
               width: '100%', 
               padding: '10px', 
-              backgroundColor: '#3a1a1a', 
-              color: '#ff4d4d', 
-              border: '1px solid #ff4d4d', 
+              backgroundColor: '#2a1212', 
+              color: '#ef4444', 
+              border: '1px solid #ef444444', 
               borderRadius: '8px', 
               cursor: 'pointer', 
-              fontWeight: 'bold' 
+              fontWeight: 'bold',
+              fontSize: '13px'
             }}
           >
             🚪 Cerrar Sesión
@@ -161,8 +168,8 @@ export function App() {
         </div>
       </aside>
 
-      {/* VISTAS PRINCIPALES */}
-      <main style={{ flex: 1, padding: '30px', backgroundColor: '#121212', overflowY: 'auto', paddingBottom: cancionActual ? '100px' : '30px' }}>
+      {/* ÁREA PRINCIPAL */}
+      <main style={{ flex: 1, padding: '30px', backgroundColor: '#121214', overflowY: 'auto', paddingBottom: cancionActual ? '110px' : '30px' }}>
         {pestana === 'descubrir' && (
           <ListaCanciones 
             alReproducir={(cancion: any) => setCancionActual(cancion)} 
@@ -174,37 +181,49 @@ export function App() {
         {pestana === 'admin' && esAdmin && <PanelAdmin />}
       </main>
 
-      {/* REPRODUCTOR DE AUDIO INFERIOR */}
+      {/* REPRODUCTOR DE MÚSICA INFERIOR */}
       {cancionActual && (
         <div style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: '#181818',
+          backgroundColor: '#18181c',
           borderTop: '1px solid #ff6b00',
-          padding: '12px 20px',
+          padding: '12px 24px',
           display: 'flex',
           alignItems: 'center',
           justify: 'space-between',
-          zIndex: 1000
+          zIndex: 1000,
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.5)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            {cancionActual.url_imagen && (
-              <img src={cancionActual.url_imagen} alt={cancionActual.titulo} style={{ width: '45px', height: '45px', borderRadius: '6px', objectFit: 'cover' }} />
-            )}
-            <div>
-              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: 'white' }}>{cancionActual.titulo}</p>
-              <p style={{ margin: 0, fontSize: '12px', color: '#aaa' }}>{cancionActual.artista}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '250px' }}>
+            <img 
+              src={cancionActual.url_imagen || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150'} 
+              onError={(e: any) => { e.target.src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150'; }}
+              alt={cancionActual.titulo} 
+              style={{ width: '48px', height: '48px', borderRadius: '6px', objectFit: 'cover' }} 
+            />
+            <div style={{ overflow: 'hidden' }}>
+              <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {cancionActual.titulo}
+              </p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#a1a1aa', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {cancionActual.artista}
+              </p>
             </div>
           </div>
 
-          <audio 
-            controls 
-            autoPlay 
-            src={cancionActual.url_archivo} 
-            style={{ minWidth: '300px', outline: 'none' }} 
-          />
+          <div style={{ flex: 1, maxWidth: '500px', display: 'flex', justifyContent: 'center' }}>
+            <audio 
+              controls 
+              autoPlay 
+              src={cancionActual.url_archivo} 
+              style={{ width: '100%', height: '40px', outline: 'none' }} 
+            />
+          </div>
+
+          <div style={{ width: '250px' }}></div>
         </div>
       )}
 
