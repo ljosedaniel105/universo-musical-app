@@ -39,7 +39,6 @@ export function App() {
     };
   }, []);
 
-  // Al seleccionar una nueva canción, reproducir
   useEffect(() => {
     if (cancionActual && audioRef.current) {
       audioRef.current.play().then(() => {
@@ -100,7 +99,6 @@ export function App() {
   const unirAPlaylist = () => {
     setPestana('playlists');
     setMostrarMenuOpciones(false);
-    alert(`Abre 'Mis Playlists' para agregar la canción "${cancionActual?.titulo}"`);
   };
 
   const formatearTiempo = (segundos: number) => {
@@ -139,40 +137,39 @@ export function App() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#0a0a0a', color: 'white' }}>
       
-      {/* BARRA LATERAL REDISEÑADA */}
+      {/* BARRA LATERAL */}
       <aside style={{ width: '260px', backgroundColor: '#111111', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #222222', flexShrink: 0 }}>
         <div>
-          {/* LOGO SUPERIOR IZQUIERDO CORREGIDO */}
+          {/* LOGO SUPERIOR IZQUIERDO Y NOMBRE COMPLETO */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '36px', paddingLeft: '8px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', boxShadow: '0 0 12px rgba(255,107,0,0.4)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }}>
               🎵
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: 'white', letterSpacing: '1px' }}>
-                UNIVERSO <span style={{ color: '#ff6b00' }}>MUSIC</span>
+              <h1 style={{ margin: 0, fontSize: '17px', fontWeight: '900', color: 'white', letterSpacing: '0.5px', lineHeight: '1.2' }}>
+                UNIVERSO <span style={{ color: '#ff6b00' }}>MUSICAL</span>
               </h1>
             </div>
           </div>
 
-          {/* MENÚ DE NAVEGACIÓN */}
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* BOTONES DE NAVEGACIÓN A LA IZQUIERDA */}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button 
               onClick={() => setPestana('descubrir')} 
               style={{ 
                 padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'descubrir' ? '#ff6b001a' : 'transparent', 
-                color: pestana === 'descubrir' ? '#ff6b00' : '#a1a1aa', 
-                borderLeft: pestana === 'descubrir' ? '4px solid #ff6b00' : '4px solid transparent',
-                borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                borderRadius: '0 8px 8px 0', 
+                backgroundColor: pestana === 'descubrir' ? '#ff6b0022' : '#18181b', 
+                color: pestana === 'descubrir' ? '#ff6b00' : '#e4e4e7', 
+                border: pestana === 'descubrir' ? '1px solid #ff6b0088' : '1px solid #27272a',
+                borderRadius: '10px', 
                 cursor: 'pointer',
-                fontWeight: pestana === 'descubrir' ? 'bold' : '500',
+                fontWeight: pestana === 'descubrir' ? 'bold' : '600',
                 fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s ease'
               }}
             >
               🏠 Descubrir
@@ -183,18 +180,17 @@ export function App() {
               style={{ 
                 padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'playlists' ? '#ff6b001a' : 'transparent', 
-                color: pestana === 'playlists' ? '#ff6b00' : '#a1a1aa', 
-                borderLeft: pestana === 'playlists' ? '4px solid #ff6b00' : '4px solid transparent',
-                borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                borderRadius: '0 8px 8px 0', 
+                backgroundColor: pestana === 'playlists' ? '#ff6b0022' : '#18181b', 
+                color: pestana === 'playlists' ? '#ff6b00' : '#e4e4e7', 
+                border: pestana === 'playlists' ? '1px solid #ff6b0088' : '1px solid #27272a',
+                borderRadius: '10px', 
                 cursor: 'pointer',
-                fontWeight: pestana === 'playlists' ? 'bold' : '500',
+                fontWeight: pestana === 'playlists' ? 'bold' : '600',
                 fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s ease'
               }}
             >
               🎧 Mis Playlists
@@ -205,18 +201,17 @@ export function App() {
               style={{ 
                 padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'subir' ? '#ff6b001a' : 'transparent', 
-                color: pestana === 'subir' ? '#ff6b00' : '#a1a1aa', 
-                borderLeft: pestana === 'subir' ? '4px solid #ff6b00' : '4px solid transparent',
-                borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                borderRadius: '0 8px 8px 0', 
+                backgroundColor: pestana === 'subir' ? '#ff6b0022' : '#18181b', 
+                color: pestana === 'subir' ? '#ff6b00' : '#e4e4e7', 
+                border: pestana === 'subir' ? '1px solid #ff6b0088' : '1px solid #27272a',
+                borderRadius: '10px', 
                 cursor: 'pointer',
-                fontWeight: pestana === 'subir' ? 'bold' : '500',
+                fontWeight: pestana === 'subir' ? 'bold' : '600',
                 fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s ease'
               }}
             >
               📁 Subir Música
@@ -228,18 +223,18 @@ export function App() {
                 style={{ 
                   padding: '12px 16px', 
                   textAlign: 'left', 
-                  backgroundColor: pestana === 'admin' ? '#ff6b0022' : 'transparent', 
-                  color: pestana === 'admin' ? '#ff6b00' : '#a1a1aa', 
-                  borderLeft: pestana === 'admin' ? '4px solid #ff6b00' : '4px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  borderRadius: '0 8px 8px 0', 
+                  backgroundColor: pestana === 'admin' ? '#ff6b0033' : '#18181b', 
+                  color: pestana === 'admin' ? '#ff6b00' : '#e4e4e7', 
+                  border: pestana === 'admin' ? '1px solid #ff6b00' : '1px solid #27272a',
+                  borderRadius: '10px', 
                   cursor: 'pointer', 
-                  marginTop: '16px',
+                  marginTop: '12px',
                   fontWeight: 'bold',
                   fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px'
+                  gap: '12px',
+                  boxShadow: pestana === 'admin' ? '0 0 10px rgba(255,107,0,0.2)' : 'none'
                 }}
               >
                 🔑 Panel Admin
@@ -248,7 +243,7 @@ export function App() {
           </nav>
         </div>
 
-        {/* USUARIO Y CERRAR SESIÓN */}
+        {/* CERRAR SESIÓN */}
         <div style={{ borderTop: '1px solid #222222', paddingTop: '16px' }}>
           <p style={{ fontSize: '12px', color: '#888888', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             👤 {session.user.email}
@@ -285,7 +280,7 @@ export function App() {
         {pestana === 'admin' && esAdmin && <PanelAdmin />}
       </main>
 
-      {/* REPRODUCTOR PERSONALIZADO NEGRO CON MENÚ DE 3 PUNTOS */}
+      {/* BARRA INFERIOR DE REPRODUCCIÓN (CONSERVADA EXACTAMENTE IGUAL) */}
       {cancionActual && (
         <div style={{
           position: 'fixed',
