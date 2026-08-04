@@ -1,129 +1,117 @@
 import React, { useState } from 'react';
-import { supabase } from './supabase';
+import { supabase } from './lib/supabase';
 
-export function SubirCancion() {
+export default function SubirCancion() {
   const [titulo, setTitulo] = useState('');
   const [artista, setArtista] = useState('');
-  const [genero, setGenero] = useState('');
   const [archivoAudio, setArchivoAudio] = useState<File | null>(null);
   const [archivoPortada, setArchivoPortada] = useState<File | null>(null);
-  const [keyArchivos, setKeyArchivos] = useState(Date.now()); // Para resetear los inputs de archivo
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  const manejarSubida = async (e: React.FormEvent) => {
+  const handleSubir = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titulo || !artista || !archivoAudio) {
-      setMensaje('⚠️ Completa el título, artista y selecciona el archivo MP3.');
+    if (!archivoAudio) {
+      alert('Por favor selecciona un archivo de audio.');
       return;
     }
 
     setSubiendo(true);
-    setMensaje('⏳ Subiendo archivos a Universo Musical...');
+    setMensaje('Subiendo archivos...');
 
     try {
-      // 1. Subir MP3 a Supabase Storage
-      const nombreAudio = `${Date.now()}_${archivoAudio.name.replace(/\s+/g, '_')}`;
-      const { data: dataAudio, error: errorAudio } = await supabase.storage
-        .from('canciones')
-        .upload(nombreAudio, archivoAudio);
-
+      // 1. Subir Audio
+      const audioExt = archivoAudio.name.split('.').pop();
+      const audioName = `${Date.now()}_audio.${audioExt}`;
+      const { error: errorAudio } = await supabase.storage.from('canciones').upload(audioName, archivoAudio);
       if (errorAudio) throw errorAudio;
 
-      const urlAudio = supabase.storage.from('canciones').getPublicUrl(dataAudio.path).data.publicUrl;
+      const { data: dataAudioUrl } = supabase.storage.from('canciones').getPublicUrl(audioName);
+      const urlAudio = dataAudioUrl.publicUrl;
 
-      // 2. Subir Portada Imagen (JPG / PNG)
-      let urlPortada = '';
+      // 2. Subir Portada Personalizada (si el usuario eligió una)
+      let urlPortada = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500'; // Imagen de respaldo por si no selecciona
       if (archivoPortada) {
-        const nombrePortada = `${Date.now()}_${archivoPortada.name.replace(/\s+/g, '_')}`;
-        const { data: dataPortada, error: errorPortada } = await supabase.storage
-          .from('portadas')
-          .upload(nombrePortada, archivoPortada);
-
-        if (!errorPortada && dataPortada) {
-          urlPortada = supabase.storage.from('portadas').getPublicUrl(dataPortada.path).data.publicUrl;
+        const portadaExt = archivoPortada.name.split('.').pop();
+        const portadaName = `${Date.now()}_portada.${portadaExt}`;
+        const { error: errorPortada } = await supabase.storage.from('portadas').upload(portadaName, archivoPortada);
+        
+        if (!errorPortada) {
+          const { data: dataPortadaUrl } = supabase.storage.from('portadas').getPublicUrl(portadaName);
+          urlPortada = dataPortadaUrl.publicUrl;
         }
       }
 
-      // 3. Guardar en Base de Datos
-      const { error: errorDB } = await supabase.from('canciones').insert([
+      // 3. Guardar registro en la Base de Datos
+      const { error: errorBD } = await supabase.from('canciones').insert([
         {
           titulo,
           artista,
-          genero: genero || 'Varios',
           url_archivo: urlAudio,
-          portada_url: urlPortada || 'https://via.placeholder.com/300/121214/ff6600?text=Universo+Musical',
-        },
+          url_portada: urlPortada,
+        }
       ]);
 
-      if (errorDB) throw errorDB;
+      if (errorBD) throw errorBD;
 
-      setMensaje('🎉 ¡Canción publicada con éxito!');
-      
-      // RESETEAR EL FORMULARIO COMPLETAMENTE
+      setMensaje('¡Canción subida con éxito! 🎉');
       setTitulo('');
       setArtista('');
-      setGenero('');
       setArchivoAudio(null);
       setArchivoPortada(null);
-      setKeyArchivos(Date.now()); // Resetea la selección de archivos del navegador
-    } catch (err: any) {
-      console.error(err);
-      setMensaje(`❌ Error al subir: ${err.message || 'Comprueba la conexión'}`);
+    } catch (error: any) {
+      setMensaje('Error al subir: ' + error.message);
     } finally {
       setSubiendo(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', background: '#121214', padding: '30px', borderRadius: '12px', border: '1px solid #222' }}>
-      <h2 style={{ color: '#fff', marginBottom: '20px' }}>📁 Subir Nueva Canción</h2>
+    <div style={{ maxWidth: '500px', margin: '0 auto', backgroundColor: '#1a1a1e', padding: '30px', borderRadius: '16px', border: '1px solid #2a2a30' }}>
+      <h2 style={{ color: '#ff6b00', marginTop: 0 }}>📁 Subir Nueva Canción</h2>
 
-      {mensaje && (
-        <div style={{ padding: '12px', borderRadius: '8px', background: mensaje.includes('🎉') ? 'rgba(0,255,100,0.1)' : 'rgba(255,102,0,0.1)', color: mensaje.includes('🎉') ? '#00ff66' : '#ff6600', marginBottom: '20px', fontSize: '0.9rem', border: '1px solid rgba(255,102,0,0.3)' }}>
-          {mensaje}
-        </div>
-      )}
+      {mensaje && <p style={{ color: '#ff6b00', fontWeight: 'bold' }}>{mensaje}</p>}
 
-      <form onSubmit={manejarSubida} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-          <div>
-            <label style={{ fontSize: '0.85rem', color: '#aaa', display: 'block', marginBottom: '6px' }}>Título *</label>
-            <input type="text" placeholder="Ej. Hoja de té" value={titulo} onChange={(e) => setTitulo(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#18181b', border: '1px solid #333', color: '#fff', boxSizing: 'border-box' }} />
-          </div>
-          <div>
-            <label style={{ fontSize: '0.85rem', color: '#aaa', display: 'block', marginBottom: '6px' }}>Artista *</label>
-            <input type="text" placeholder="Ej. Manu Beker" value={artista} onChange={(e) => setArtista(e.target.value)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#18181b', border: '1px solid #333', color: '#fff', boxSizing: 'border-box' }} />
-          </div>
+      <form onSubmit={handleSubir} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>Título de la canción:</label>
+          <input 
+            type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} 
+            placeholder="Ej: Hata ese día"
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
+          />
         </div>
 
         <div>
-          <label style={{ fontSize: '0.85rem', color: '#aaa', display: 'block', marginBottom: '6px' }}>Género Musical</label>
-          <select value={genero} onChange={(e) => setGenero(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#18181b', border: '1px solid #333', color: '#fff' }}>
-            <option value="">Selecciona un género...</option>
-            <option value="Rock">Rock</option>
-            <option value="Pop">Pop</option>
-            <option value="Reggaeton">Reggaeton</option>
-            <option value="Salsa">Salsa</option>
-            <option value="Hip-Hop">Hip-Hop</option>
-            <option value="Electronica">Electrónica</option>
-            <option value="Cumbia">Cumbia</option>
-            <option value="Trap">Trap</option>
-          </select>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>Artista:</label>
+          <input 
+            type="text" required value={artista} onChange={(e) => setArtista(e.target.value)} 
+            placeholder="Ej: Lasso"
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
+          />
         </div>
 
         <div>
-          <label style={{ fontSize: '0.85rem', color: '#ff6600', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>Archivo de Audio (*.mp3, *.wav)</label>
-          <input key={`audio_${keyArchivos}`} type="file" accept="audio/*" onChange={(e) => setArchivoAudio(e.target.files?.[0] || null)} required style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#18181b', border: '1px dashed #ff6600', color: '#fff', cursor: 'pointer' }} />
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>🎵 Archivo MP3 / Audio:</label>
+          <input 
+            type="file" accept="audio/*" required onChange={(e) => setArchivoAudio(e.target.files?.[0] || null)} 
+            style={{ color: 'white' }}
+          />
         </div>
 
         <div>
-          <label style={{ fontSize: '0.85rem', color: '#aaa', display: 'block', marginBottom: '6px' }}>Portada Imagen (*.jpg, *.png)</label>
-          <input key={`portada_${keyArchivos}`} type="file" accept="image/*" onChange={(e) => setArchivoPortada(e.target.files?.[0] || null)} style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#18181b', border: '1px solid #333', color: '#fff', cursor: 'pointer' }} />
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>🖼️ Imagen de Portada (Selecciona tu foto aquí):</label>
+          <input 
+            type="file" accept="image/*" onChange={(e) => setArchivoPortada(e.target.files?.[0] || null)} 
+            style={{ color: 'white' }}
+          />
         </div>
 
-        <button type="submit" disabled={subiendo} style={{ marginTop: '10px', background: '#ff6600', color: '#fff', padding: '14px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: subiendo ? 'wait' : 'pointer', fontSize: '1rem' }}>
-          {subiendo ? 'Subiendo...' : 'Publicar Canción 🎵'}
+        <button 
+          type="submit" disabled={subiendo}
+          style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}
+        >
+          {subiendo ? 'Subiendo...' : 'Guardar Canción 🚀'}
         </button>
       </form>
     </div>
