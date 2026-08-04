@@ -6,9 +6,11 @@ interface ListaCancionesProps {
   esAdmin?: boolean;
 }
 
-export function ListaCanciones({ alReproducir, esAdmin }: ListaCancionesProps) {
+export function ListaCanciones({ alReproducir }: ListaCancionesProps) {
   const [canciones, setCanciones] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+
+  const IMAGEN_DEFECTO = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400';
 
   useEffect(() => {
     obtenerCanciones();
@@ -31,10 +33,8 @@ export function ListaCanciones({ alReproducir, esAdmin }: ListaCancionesProps) {
   };
 
   const reproducir = (cancion: any) => {
-    if (typeof alReproducir === 'function') {
+    if (alReproducir) {
       alReproducir(cancion);
-    } else {
-      console.log('Reproduciendo canción:', cancion);
     }
   };
 
@@ -44,7 +44,9 @@ export function ListaCanciones({ alReproducir, esAdmin }: ListaCancionesProps) {
 
   return (
     <div>
-      <h2 style={{ fontSize: '22px', marginBottom: '20px' }}>🌏 Todas las Canciones</h2>
+      <h2 style={{ fontSize: '22px', marginBottom: '20px' }}>
+        🌏 Todas las Canciones
+      </h2>
 
       {canciones.length === 0 ? (
         <p style={{ color: '#888' }}>No hay canciones disponibles aún.</p>
@@ -54,22 +56,27 @@ export function ListaCanciones({ alReproducir, esAdmin }: ListaCancionesProps) {
             <div 
               key={cancion.id} 
               style={{ 
-                backgroundColor: '#181818', 
+                backgroundColor: '#18181c', 
                 borderRadius: '12px', 
-                padding: '15px', 
+                padding: '16px', 
                 display: 'flex', 
                 flexDirection: 'column', 
                 alignItems: 'center',
-                border: '1px solid #282828'
+                border: '1px solid #28282e'
               }}
             >
               <img 
-                src={cancion.url_imagen || 'https://via.placeholder.com/150'} 
+                src={cancion.url_imagen || IMAGEN_DEFECTO} 
+                onError={(e: any) => { e.target.src = IMAGEN_DEFECTO; }}
                 alt={cancion.titulo} 
-                style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '8px', marginBottom: '12px' }} 
+                style={{ width: '100%', height: '170px', objectFit: 'cover', borderRadius: '8px', marginBottom: '12px' }} 
               />
-              <h3 style={{ margin: '0 0 5px 0', fontSize: '15px', textAlign: 'center', color: 'white' }}>{cancion.titulo}</h3>
-              <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#aaa', textAlign: 'center' }}>{cancion.artista}</p>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '15px', textAlign: 'center', color: 'white', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {cancion.titulo}
+              </h3>
+              <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: '#a1a1aa', textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {cancion.artista}
+              </p>
 
               <button 
                 onClick={() => reproducir(cancion)} 
@@ -81,7 +88,8 @@ export function ListaCanciones({ alReproducir, esAdmin }: ListaCancionesProps) {
                   border: 'none', 
                   borderRadius: '20px', 
                   fontWeight: 'bold', 
-                  cursor: 'pointer' 
+                  cursor: 'pointer',
+                  fontSize: '14px'
                 }}
               >
                 ▶ Escuchar
