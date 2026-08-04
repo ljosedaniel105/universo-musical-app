@@ -1,105 +1,80 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from './supabase';
+import React, { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 
-interface ListaCancionesProps {
-  alReproducir?: (cancion: any) => void;
-  esAdmin?: boolean;
+interface Cancion {
+  id: string;
+  titulo: string;
+  artista: string;
+  url_archivo: string;
+  url_portada: string;
 }
 
-export function ListaCanciones({ alReproducir }: ListaCancionesProps) {
-  const [canciones, setCanciones] = useState<any[]>([]);
+interface Props {
+  alSeleccionarCancion: (cancion: Cancion) => void;
+}
+
+export default function ListaCanciones({ alSeleccionarCancion }: Props) {
+  const [canciones, setCanciones] = useState<Cancion[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  const IMAGEN_DEFECTO = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400';
-
   useEffect(() => {
-    obtenerCanciones();
+    cargarCanciones();
   }, []);
 
-  const obtenerCanciones = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('canciones')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCanciones(data || []);
-    } catch (e) {
-      console.error('Error al cargar canciones:', e);
-    } finally {
-      setCargando(false);
+  const cargarCanciones = async () => {
+    setCargando(true);
+    const { data, error } = await supabase.from('canciones').select('*');
+    if (!error && data) {
+      setCanciones(data);
     }
-  };
-
-  const reproducir = (cancion: any) => {
-    if (typeof alReproducir === 'function') {
-      alReproducir(cancion);
-    }
+    setCargando(false);
   };
 
   if (cargando) {
-    return <div style={{ color: 'white' }}>Cargando música...</div>;
+    return <div style={{ color: 'white' }}>Cargando canciones...</div>;
   }
 
   return (
     <div>
-      <h2 style={{ fontSize: '22px', marginBottom: '20px' }}>
-        🌏 Todas las Canciones
-      </h2>
-
+      <h2 style={{ color: '#ff6b00', marginTop: 0, marginBottom: '20px' }}>🔥 Descubrir Canciones</h2>
+      
       {canciones.length === 0 ? (
-        <p style={{ color: '#888' }}>No hay canciones disponibles aún.</p>
+        <p style={{ color: '#aaa' }}>No hay canciones disponibles. ¡Sube una en la sección "Subir Música"!</p>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-          {canciones.map((cancion) => (
-            <div 
-              key={cancion.id} 
-              style={{ 
-                backgroundColor: '#121212', 
-                borderRadius: '12px', 
-                padding: '16px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                border: '1px solid #222222'
-              }}
-            >
-              <img 
-                src={cancion.url_imagen || IMAGEN_DEFECTO} 
-                onError={(e: any) => { e.target.src = IMAGEN_DEFECTO; }}
-                alt={cancion.titulo} 
-                style={{ width: '100%', height: '170px', objectFit: 'cover', borderRadius: '8px', marginBottom: '12px' }} 
-              />
-              <h3 style={{ margin: '0 0 4px 0', fontSize: '15px', textAlign: 'center', color: 'white', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {cancion.titulo}
-              </h3>
-              <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: '#a1a1aa', textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {cancion.artista}
-              </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
+          {canciones.map((cancion) => {
+            // Si por alguna razón la imagen falla o viene vacía, usa una portada musical limpia en lugar del micrófono
+            const portadaFinal = cancion.url_portada && cancion.url_portada.trim() !== '' 
+              ? cancion.url_portada 
+              : 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
 
-              <button 
-                onClick={() => reproducir(cancion)} 
+            return (
+              <div 
+                key={cancion.id}
+                onClick={() => alSeleccionarCancion(cancion)}
                 style={{ 
-                  width: '100%', 
-                  padding: '10px', 
-                  backgroundColor: '#ff6b00', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '20px', 
-                  fontWeight: 'bold', 
-                  cursor: 'pointer',
-                  fontSize: '14px'
+                  backgroundColor: '#18181c', borderRadius: '12px', padding: '15px', cursor: 'pointer', 
+                  border: '1px solid #2a2a30', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column', gap: '10px'
                 }}
               >
-                ▶ Escuchar
-              </button>
-            </div>
-          ))}
+                <img 
+                  src={portadaFinal} 
+                  alt={cancion.titulo} 
+                  style={{ width: '100%', height: '160px', borderRadius: '8px', objectFit: 'cover' }}
+                />
+                <div>
+                  <h3 style={{ color: 'white', fontSize: '15px', margin: '5px 0 2px 0', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {cancion.titulo}
+                  </h3>
+                  <p style={{ color: '#aaa', fontSize: '13px', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {cancion.artista}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
-
-export default ListaCanciones;
