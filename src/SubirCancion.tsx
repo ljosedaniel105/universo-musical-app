@@ -15,14 +15,20 @@ export default function SubirCancion() {
     setSubiendo(true);
     setMensaje('');
 
+    const imagenDefecto = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
+    const portadaAInsertar = urlPortada.trim() !== '' ? urlPortada : imagenDefecto;
+
     try {
+      // Guardamos en TODOS los nombres de columna posibles para evitar cualquier fallo de Supabase
       const { error } = await supabase.from('canciones').insert([
         {
           titulo: titulo,
           artista: artista,
           genero: genero || 'Varios',
           url_audio: urlAudio,
-          url_portada: urlPortada || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500'
+          url_archivo: urlAudio,
+          url_portada: portadaAInsertar,
+          portada_url: portadaAInsertar
         }
       ]);
 
@@ -79,7 +85,7 @@ export default function SubirCancion() {
         </div>
 
         <div>
-          <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px', textAlign: 'center' }}>URL del Audio (Direct Link)</label>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px', textAlign: 'center' }}>URL del Audio (Direct Link .mp3)</label>
           <input 
             type="text" required placeholder="https://ejemplo.com/audio.mp3" value={urlAudio} onChange={(e) => setUrlAudio(e.target.value)} 
             style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #2a2a30', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
@@ -87,7 +93,7 @@ export default function SubirCancion() {
         </div>
 
         <div>
-          <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px', textAlign: 'center' }}>URL de la Portada (Imagen)</label>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px', textAlign: 'center' }}>URL de la Portada (Imagen .jpg o .png)</label>
           <input 
             type="text" placeholder="https://ejemplo.com/portada.jpg" value={urlPortada} onChange={(e) => setUrlPortada(e.target.value)} 
             style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #2a2a30', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
