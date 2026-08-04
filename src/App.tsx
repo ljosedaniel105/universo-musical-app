@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabase';
 import { ListaCanciones } from './ListaCanciones';
 import { SubirCancion } from './SubirCancion';
@@ -11,6 +11,14 @@ export function App() {
   const [cargando, setCargando] = useState(true);
   const [pestana, setPestana] = useState('descubrir');
   const [cancionActual, setCancionActual] = useState<any>(null);
+
+  // Estados del reproductor de audio customizado
+  const [reproduciendo, setReproduciendo] = useState(false);
+  const [progreso, setProgreso] = useState(0);
+  const [duracion, setDuracion] = useState(0);
+  const [tiempoActual, setTiempoActual] = useState(0);
+  const [volumen, setVolumen] = useState(1);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const CORREO_ADMIN = 'ljosedaniel105@gmail.com';
 
@@ -30,6 +38,59 @@ export function App() {
     };
   }, []);
 
+  // Al cambiar de canción, reproducir automáticamente
+  useEffect(() => {
+    if (cancionActual && audioRef.current) {
+      audioRef.current.play().then(() => {
+        setReproduciendo(true);
+      }).catch(e => console.error("Error al reproducir:", e));
+    }
+  }, [cancionActual]);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (reproduciendo) {
+      audioRef.current.pause();
+      setReproduciendo(false);
+    } else {
+      audioRef.current.play();
+      setReproduciendo(true);
+    }
+  };
+
+  const manejarTiempoUpdate = () => {
+    if (!audioRef.current) return;
+    const actual = audioRef.current.currentTime;
+    const total = audioRef.current.duration || 0;
+    setTiempoActual(actual);
+    setDuracion(total);
+    setProgreso(total > 0 ? (actual / total) * 100 : 0);
+  };
+
+  const cambiarProgreso = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nuevoPorcentaje = Number(e.target.value);
+    if (audioRef.current && duracion) {
+      const nuevoTiempo = (nuevoPorcentaje / 100) * duracion;
+      audioRef.current.currentTime = nuevoTiempo;
+      setProgreso(nuevoPorcentaje);
+    }
+  };
+
+  const cambiarVolumen = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setVolumen(val);
+    if (audioRef.current) {
+      audioRef.current.volume = val;
+    }
+  };
+
+  const formatearTiempo = (segundos: number) => {
+    if (isNaN(segundos)) return "0:00";
+    const mins = Math.floor(segundos / 60);
+    const segs = Math.floor(segundos % 60);
+    return `${mins}:${segs < 10 ? '0' : ''}${segs}`;
+  };
+
   const cerrarSesion = async () => {
     try {
       await supabase.auth.signOut();
@@ -44,7 +105,7 @@ export function App() {
 
   if (cargando) {
     return (
-      <div style={{ color: 'white', backgroundColor: '#121214', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ color: 'white', backgroundColor: '#000000', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         Cargando Universo Musical...
       </div>
     );
@@ -57,35 +118,35 @@ export function App() {
   const esAdmin = session?.user?.email === CORREO_ADMIN;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121214', color: 'white' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#0a0a0a', color: 'white' }}>
       
-      {/* BARRA LATERAL (ESTILO REPLIT) */}
-      <aside style={{ width: '250px', backgroundColor: '#18181c', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #28282e', flexShrink: 0 }}>
+      {/* BARRA LATERAL ESTILO REPLIT */}
+      <aside style={{ width: '250px', backgroundColor: '#121212', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #222222', flexShrink: 0 }}>
         <div>
           {/* LOGO */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px', paddingLeft: '8px' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6b00' }}>
+            <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ff6b00', display: 'flex', alignItems: 'center', gap: '8px' }}>
               UNIVERSO <span style={{ color: '#8b5cf6' }}>🎵</span>
             </div>
           </div>
 
-          {/* MENÚ DE NAVEGACIÓN */}
+          {/* NAVEGACIÓN */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button 
               onClick={() => setPestana('descubrir')} 
               style={{ 
                 padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'descubrir' ? '#26262e' : 'transparent', 
+                backgroundColor: pestana === 'descubrir' ? '#222222' : 'transparent', 
                 color: pestana === 'descubrir' ? '#ff6b00' : '#a1a1aa', 
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: 'pointer',
                 fontWeight: pestana === 'descubrir' ? 'bold' : 'normal',
+                fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                fontSize: '14px'
+                gap: '10px'
               }}
             >
               🏠 Descubrir
@@ -96,16 +157,16 @@ export function App() {
               style={{ 
                 padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'playlists' ? '#26262e' : 'transparent', 
+                backgroundColor: pestana === 'playlists' ? '#222222' : 'transparent', 
                 color: pestana === 'playlists' ? '#ff6b00' : '#a1a1aa', 
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: 'pointer',
                 fontWeight: pestana === 'playlists' ? 'bold' : 'normal',
+                fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                fontSize: '14px'
+                gap: '10px'
               }}
             >
               🎧 Mis Playlists
@@ -116,16 +177,16 @@ export function App() {
               style={{ 
                 padding: '12px 16px', 
                 textAlign: 'left', 
-                backgroundColor: pestana === 'subir' ? '#26262e' : 'transparent', 
+                backgroundColor: pestana === 'subir' ? '#222222' : 'transparent', 
                 color: pestana === 'subir' ? '#ff6b00' : '#a1a1aa', 
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: 'pointer',
                 fontWeight: pestana === 'subir' ? 'bold' : 'normal',
+                fontSize: '14px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                fontSize: '14px'
+                gap: '10px'
               }}
             >
               📁 Subir Música
@@ -137,17 +198,17 @@ export function App() {
                 style={{ 
                   padding: '12px 16px', 
                   textAlign: 'left', 
-                  backgroundColor: pestana === 'admin' ? '#0066ff' : '#0055ff22', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '10px', 
+                  backgroundColor: pestana === 'admin' ? '#ff6b0022' : 'transparent', 
+                  color: pestana === 'admin' ? '#ff6b00' : '#a1a1aa', 
+                  border: pestana === 'admin' ? '1px solid #ff6b00' : '1px solid #222222', 
+                  borderRadius: '8px', 
                   cursor: 'pointer', 
                   marginTop: '12px',
                   fontWeight: 'bold',
+                  fontSize: '14px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  fontSize: '14px'
+                  gap: '10px'
                 }}
               >
                 🔑 Panel Admin
@@ -156,8 +217,8 @@ export function App() {
           </nav>
         </div>
 
-        {/* PIE CON USUARIO Y CERRAR SESIÓN */}
-        <div style={{ borderTop: '1px solid #28282e', paddingTop: '16px' }}>
+        {/* PIE Y USUARIO */}
+        <div style={{ borderTop: '1px solid #222222', paddingTop: '16px' }}>
           <p style={{ fontSize: '12px', color: '#71717a', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             👤 {session.user.email}
           </p>
@@ -166,9 +227,9 @@ export function App() {
             style={{ 
               width: '100%', 
               padding: '10px', 
-              backgroundColor: '#2a1212', 
+              backgroundColor: '#1f1315', 
               color: '#ef4444', 
-              border: '1px solid #ef444444', 
+              border: '1px solid #ef444433', 
               borderRadius: '8px', 
               cursor: 'pointer', 
               fontWeight: 'bold',
@@ -181,7 +242,7 @@ export function App() {
       </aside>
 
       {/* ÁREA PRINCIPAL */}
-      <main style={{ flex: 1, padding: '30px', backgroundColor: '#121214', overflowY: 'auto', paddingBottom: cancionActual ? '110px' : '30px' }}>
+      <main style={{ flex: 1, padding: '32px', backgroundColor: '#0a0a0a', overflowY: 'auto', paddingBottom: cancionActual ? '110px' : '32px' }}>
         {pestana === 'descubrir' && (
           <ListaCanciones 
             alReproducir={(cancion: any) => setCancionActual(cancion)} 
@@ -193,23 +254,31 @@ export function App() {
         {pestana === 'admin' && esAdmin && <PanelAdmin />}
       </main>
 
-      {/* REPRODUCTOR ESTILO REPLIT (INFERIOR FIJO) */}
+      {/* REPRODUCTOR PERSONALIZADO NEGRO CON BARRAS NARANJAS */}
       {cancionActual && (
         <div style={{
           position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          backgroundColor: '#18181c',
-          borderTop: '1px solid #ff6b00',
+          backgroundColor: '#000000',
+          borderTop: '1px solid #ff6b0044',
           padding: '12px 24px',
           display: 'flex',
           alignItems: 'center',
           justify: 'space-between',
           zIndex: 1000,
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.5)'
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.9)'
         }}>
-          {/* DETALLES DE CANCIÓN */}
+          {/* Elemento de audio oculto controlado por JS */}
+          <audio 
+            ref={audioRef}
+            src={cancionActual.url_archivo}
+            onTimeUpdate={manejarTiempoUpdate}
+            onEnded={() => setReproduciendo(false)}
+          />
+
+          {/* INFORMACIÓN DE LA CANCIÓN */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '250px' }}>
             <img 
               src={cancionActual.url_imagen || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150'} 
@@ -227,17 +296,48 @@ export function App() {
             </div>
           </div>
 
-          {/* CONTROLES DE AUDIO */}
-          <div style={{ flex: 1, maxWidth: '500px', display: 'flex', justifyContent: 'center' }}>
-            <audio 
-              controls 
-              autoPlay 
-              src={cancionActual.url_archivo} 
-              style={{ width: '100%', height: '40px', outline: 'none' }} 
-            />
+          {/* CONTROLES Y BARRA NARANJA */}
+          <div style={{ flex: 1, maxWidth: '550px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            {/* BOTONES PLAY/PAUSA */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button onClick={togglePlay} style={{ backgroundColor: '#ff6b00', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 'bold' }}>
+                {reproduciendo ? '⏸' : '▶'}
+              </button>
+            </div>
+
+            {/* BARRA DE PROGRESO CON COLOR NARANJA */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+              <span style={{ fontSize: '11px', color: '#888', minWidth: '35px', textAlign: 'right' }}>{formatearTiempo(tiempoActual)}</span>
+              <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={progreso} 
+                onChange={cambiarProgreso} 
+                style={{ 
+                  flex: 1, 
+                  accentColor: '#ff6b00', 
+                  cursor: 'pointer',
+                  height: '4px'
+                }} 
+              />
+              <span style={{ fontSize: '11px', color: '#888', minWidth: '35px' }}>{formatearTiempo(duracion)}</span>
+            </div>
           </div>
 
-          <div style={{ width: '250px' }}></div>
+          {/* CONTROL DE VOLUMEN */}
+          <div style={{ width: '250px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px' }}>🔊</span>
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.01" 
+              value={volumen} 
+              onChange={cambiarVolumen} 
+              style={{ accentColor: '#ff6b00', cursor: 'pointer', width: '80px', height: '4px' }} 
+            />
+          </div>
         </div>
       )}
 
