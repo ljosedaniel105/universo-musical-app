@@ -67,7 +67,6 @@ export default function App() {
     );
   }
 
-  // Pantalla de Iniciar Sesión / Registro
   if (!session) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#121214', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -86,11 +85,7 @@ export default function App() {
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#ccc' }}>✉️ Correo Electrónico:</label>
               <input 
-                type="email" 
-                required 
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                placeholder="correo@ejemplo.com"
+                type="email" required value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="correo@ejemplo.com"
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
               />
             </div>
@@ -98,29 +93,19 @@ export default function App() {
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#ccc' }}>🔒 Contraseña:</label>
               <input 
-                type="password" 
-                required 
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                placeholder="••••••••"
+                type="password" required value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="••••••••"
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
               />
             </div>
 
-            <button 
-              type="submit" 
-              style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}
-            >
+            <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}>
               {esRegistro ? 'Registrarse 🚀' : 'Entrar 🔒'}
             </button>
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#aaa' }}>
             {esRegistro ? '¿Ya tienes una cuenta?' : '¿No tienes cuenta aún?'} {' '}
-            <button 
-              onClick={() => { setEsRegistro(!esRegistro); setMensajeError(''); }}
-              style={{ background: 'none', border: 'none', color: '#ff6b00', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }}
-            >
+            <button onClick={() => { setEsRegistro(!esRegistro); setMensajeError(''); }} style={{ background: 'none', border: 'none', color: '#ff6b00', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }}>
               {esRegistro ? 'Inicia Sesión aquí' : 'Regístrate aquí'}
             </button>
           </p>
@@ -129,105 +114,70 @@ export default function App() {
     );
   }
 
-  // Pantalla Principal (Barra Lateral + Contenido)
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#121214', color: 'white', fontFamily: 'sans-serif' }}>
       
       {/* BARRA LATERAL */}
       <div style={{ width: '260px', backgroundColor: '#18181c', borderRight: '1px solid #2a2a30', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px' }}>
         <div>
-          {/* LOGO DE TU APLICACIÓN CON RESPALDO */}
+          {/* LOGO CON ICONO DE NOTA MUSICAL */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '35px' }}>
-            <img 
-              src="https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png" 
-              alt="Logo Universo Musical" 
-              style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'contain', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }} 
-              onError={(e) => {
-                // Si la imagen de Supabase no carga, se usará un logo alternativo oficial
-                (e.target as HTMLImageElement).src = 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png';
-              }}
-            />
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }}>
+              🎵
+            </div>
             <h1 style={{ fontSize: '18px', fontWeight: 'bold', letterSpacing: '1px', margin: 0, color: '#ffffff' }}>
               UNIVERSO <span style={{ color: '#ff6b00' }}>MUSICAL</span>
             </h1>
           </div>
 
-          {/* MENÚ DE NAVEGACIÓN */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button 
               onClick={() => setSeccionActual('descubrir')}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
-                backgroundColor: seccionActual === 'descubrir' ? '#26262e' : 'transparent', 
-                color: seccionActual === 'descubrir' ? '#ff6b00' : '#a0a0ab', 
-                fontWeight: seccionActual === 'descubrir' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' 
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', backgroundColor: seccionActual === 'descubrir' ? '#26262e' : 'transparent', color: seccionActual === 'descubrir' ? '#ff6b00' : '#a0a0ab', fontWeight: seccionActual === 'descubrir' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' }}
             >
               🏠 Descubrir
             </button>
 
             <button 
               onClick={() => setSeccionActual('playlists')}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
-                backgroundColor: seccionActual === 'playlists' ? '#26262e' : 'transparent', 
-                color: seccionActual === 'playlists' ? '#ff6b00' : '#a0a0ab', 
-                fontWeight: seccionActual === 'playlists' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' 
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', backgroundColor: seccionActual === 'playlists' ? '#26262e' : 'transparent', color: seccionActual === 'playlists' ? '#ff6b00' : '#a0a0ab', fontWeight: seccionActual === 'playlists' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' }}
             >
               🎧 Mis Playlists
             </button>
 
             <button 
               onClick={() => setSeccionActual('subir')}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
-                backgroundColor: seccionActual === 'subir' ? '#26262e' : 'transparent', 
-                color: seccionActual === 'subir' ? '#ff6b00' : '#a0a0ab', 
-                fontWeight: seccionActual === 'subir' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' 
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', backgroundColor: seccionActual === 'subir' ? '#26262e' : 'transparent', color: seccionActual === 'subir' ? '#ff6b00' : '#a0a0ab', fontWeight: seccionActual === 'subir' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' }}
             >
               📁 Subir Música
             </button>
 
             <button 
               onClick={() => setSeccionActual('admin')}
-              style={{ 
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', 
-                border: seccionActual === 'admin' ? '1px solid #ff6b00' : '1px solid #3a3a42', 
-                backgroundColor: seccionActual === 'admin' ? 'rgba(255, 107, 0, 0.15)' : 'transparent', 
-                color: seccionActual === 'admin' ? '#ff6b00' : '#d0d0d8', 
-                fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', fontSize: '15px', marginTop: '10px' 
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: seccionActual === 'admin' ? '1px solid #ff6b00' : '1px solid #3a3a42', backgroundColor: seccionActual === 'admin' ? 'rgba(255, 107, 0, 0.15)' : 'transparent', color: seccionActual === 'admin' ? '#ff6b00' : '#d0d0d8', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', fontSize: '15px', marginTop: '10px' }}
             >
               🔑 Panel Admin
             </button>
           </nav>
         </div>
 
-        {/* PIE DE PÁGINA DE LA BARRA LATERAL */}
         <div style={{ borderTop: '1px solid #2a2a30', paddingTop: '15px' }}>
           <p style={{ fontSize: '12px', color: '#888', marginBottom: '10px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             👤 {session?.user?.email}
           </p>
-          <button 
-            onClick={handleCerrarSesion}
-            style={{ width: '100%', padding: '10px', backgroundColor: '#2a1515', color: '#ff4d4d', border: '1px solid #4a1e1e', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
+          <button onClick={handleCerrarSesion} style={{ width: '100%', padding: '10px', backgroundColor: '#2a1515', color: '#ff4d4d', border: '1px solid #4a1e1e', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
             🚪 Cerrar Sesión
           </button>
         </div>
       </div>
 
-      {/* ÁREA DE CONTENIDO PRINCIPAL */}
       <div style={{ flex: 1, padding: '30px', paddingBottom: '110px', overflowY: 'auto' }}>
         {seccionActual === 'descubrir' && <ListaCanciones alSeleccionarCancion={setCancionActual} />}
-        {seccionActual === 'playlists' && <h2>🎧 Sección de Playlists (En desarrollo)</h2>}
+        {seccionActual === 'playlists' && <h2>🎧 Sección de Playlists</h2>}
         {seccionActual === 'subir' && <SubirCancion />}
         {seccionActual === 'admin' && <PanelAdmin />}
       </div>
 
-      {/* REPRODUCTOR INFERIOR DE MÚSICA */}
       {cancionActual && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '80px', backgroundColor: '#18181c', borderTop: '1px solid #2a2a30', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px', zIndex: 100 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '250px' }}>
@@ -238,7 +188,7 @@ export default function App() {
             </div>
           </div>
 
-          <audio controls autoPlay src={cancionActual.url_archivo} style={{ width: '50%' }} />
+          <audio controls autoPlay src={cancionActual.url_audio || cancionActual.url_archivo} style={{ width: '50%' }} />
           <div style={{ width: '250px' }}></div>
         </div>
       )}
