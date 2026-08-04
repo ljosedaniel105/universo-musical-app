@@ -180,4 +180,65 @@ export default function App() {
                 display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', border: 'none', 
                 backgroundColor: seccionActual === 'subir' ? '#26262e' : 'transparent', 
                 color: seccionActual === 'subir' ? '#ff6b00' : '#a0a0ab', 
-                fontWeight: seccionActual === 'subir' ? 'bold' : '
+                fontWeight: seccionActual === 'subir' ? 'bold' : 'normal', cursor: 'pointer', textAlign: 'left', fontSize: '15px' 
+              }}
+            >
+              📁 Subir Música
+            </button>
+
+            <button 
+              onClick={() => setSeccionActual('admin')}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '10px', 
+                border: seccionActual === 'admin' ? '1px solid #ff6b00' : '1px solid #3a3a42', 
+                backgroundColor: seccionActual === 'admin' ? 'rgba(255, 107, 0, 0.15)' : 'transparent', 
+                color: seccionActual === 'admin' ? '#ff6b00' : '#d0d0d8', 
+                fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', fontSize: '15px', marginTop: '10px' 
+              }}
+            >
+              🔑 Panel Admin
+            </button>
+          </nav>
+        </div>
+
+        {/* PIE DE PÁGINA DE LA BARRA LATERAL */}
+        <div style={{ borderTop: '1px solid #2a2a30', paddingTop: '15px' }}>
+          <p style={{ fontSize: '12px', color: '#888', marginBottom: '10px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            👤 {session?.user?.email}
+          </p>
+          <button 
+            onClick={handleCerrarSesion}
+            style={{ width: '100%', padding: '10px', backgroundColor: '#2a1515', color: '#ff4d4d', border: '1px solid #4a1e1e', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            🚪 Cerrar Sesión
+          </button>
+        </div>
+      </div>
+
+      {/* ÁREA DE CONTENIDO PRINCIPAL */}
+      <div style={{ flex: 1, padding: '30px', paddingBottom: '110px', overflowY: 'auto' }}>
+        {seccionActual === 'descubrir' && <ListaCanciones alSeleccionarCancion={setCancionActual} />}
+        {seccionActual === 'playlists' && <h2>🎧 Seccion de Playlists (En desarrollo)</h2>}
+        {seccionActual === 'subir' && <SubirCancion />}
+        {seccionActual === 'admin' && <PanelAdmin />}
+      </div>
+
+      {/* REPRODUCTOR INFERIOR DE MÚSICA */}
+      {cancionActual && (
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '80px', backgroundColor: '#18181c', borderTop: '1px solid #2a2a30', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px', zIndex: 100 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '250px' }}>
+            <img src={cancionActual.url_portada} alt={cancionActual.titulo} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+            <div>
+              <h4 style={{ margin: 0, fontSize: '15px', color: 'white' }}>{cancionActual.titulo}</h4>
+              <p style={{ margin: 0, fontSize: '13px', color: '#aaa' }}>{cancionActual.artista}</p>
+            </div>
+          </div>
+
+          <audio controls autoPlay src={cancionActual.url_archivo} style={{ width: '50%' }} />
+          <div style={{ width: '250px' }}></div>
+        </div>
+      )}
+
+    </div>
+  );
+}
