@@ -59,17 +59,17 @@ export function App() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121214', color: 'white' }}>
       
-      {/* MENÚ LATERAL */}
+      {/* BARRA LATERAL (ESTILO REPLIT) */}
       <aside style={{ width: '250px', backgroundColor: '#18181c', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #28282e', flexShrink: 0 }}>
         <div>
-          {/* LOGO UNIVERSO MUSICAL */}
+          {/* LOGO */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px', paddingLeft: '8px' }}>
-            <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#ff6b00', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6b00' }}>
               UNIVERSO <span style={{ color: '#8b5cf6' }}>🎵</span>
             </div>
           </div>
 
-          {/* BOTONES DE NAVEGACIÓN */}
+          {/* MENÚ DE NAVEGACIÓN */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button 
               onClick={() => setPestana('descubrir')} 
@@ -82,6 +82,9 @@ export function App() {
                 borderRadius: '8px', 
                 cursor: 'pointer',
                 fontWeight: pestana === 'descubrir' ? 'bold' : 'normal',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 fontSize: '14px'
               }}
             >
@@ -99,6 +102,9 @@ export function App() {
                 borderRadius: '8px', 
                 cursor: 'pointer',
                 fontWeight: pestana === 'playlists' ? 'bold' : 'normal',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 fontSize: '14px'
               }}
             >
@@ -116,6 +122,9 @@ export function App() {
                 borderRadius: '8px', 
                 cursor: 'pointer',
                 fontWeight: pestana === 'subir' ? 'bold' : 'normal',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 fontSize: '14px'
               }}
             >
@@ -135,6 +144,9 @@ export function App() {
                   cursor: 'pointer', 
                   marginTop: '12px',
                   fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
                   fontSize: '14px'
                 }}
               >
@@ -144,7 +156,7 @@ export function App() {
           </nav>
         </div>
 
-        {/* CERRAR SESIÓN */}
+        {/* PIE CON USUARIO Y CERRAR SESIÓN */}
         <div style={{ borderTop: '1px solid #28282e', paddingTop: '16px' }}>
           <p style={{ fontSize: '12px', color: '#71717a', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             👤 {session.user.email}
@@ -181,7 +193,7 @@ export function App() {
         {pestana === 'admin' && esAdmin && <PanelAdmin />}
       </main>
 
-      {/* REPRODUCTOR DE MÚSICA INFERIOR */}
+      {/* REPRODUCTOR ESTILO REPLIT (INFERIOR FIJO) */}
       {cancionActual && (
         <div style={{
           position: 'fixed',
@@ -197,6 +209,7 @@ export function App() {
           zIndex: 1000,
           boxShadow: '0 -4px 20px rgba(0,0,0,0.5)'
         }}>
+          {/* DETALLES DE CANCIÓN */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '250px' }}>
             <img 
               src={cancionActual.url_imagen || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150'} 
@@ -214,6 +227,7 @@ export function App() {
             </div>
           </div>
 
+          {/* CONTROLES DE AUDIO */}
           <div style={{ flex: 1, maxWidth: '500px', display: 'flex', justifyContent: 'center' }}>
             <audio 
               controls 
