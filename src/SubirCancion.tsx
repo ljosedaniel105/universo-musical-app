@@ -12,12 +12,12 @@ export default function SubirCancion() {
   const handleSubir = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!archivoAudio) {
-      alert('Por favor selecciona un archivo de audio.');
+      alert('Por favor selecciona un archivo de audio MP3.');
       return;
     }
 
     setSubiendo(true);
-    setMensaje('Subiendo archivos...');
+    setMensaje('Subiendo canción e imagen...');
 
     try {
       // 1. Subir Audio
@@ -29,20 +29,33 @@ export default function SubirCancion() {
       const { data: dataAudioUrl } = supabase.storage.from('canciones').getPublicUrl(audioName);
       const urlAudio = dataAudioUrl.publicUrl;
 
-      // 2. Subir Portada Personalizada (si el usuario eligió una)
-      let urlPortada = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500'; // Imagen de respaldo por si no selecciona
+      // 2. Subir Portada Personalizada
+      let urlPortada = '';
+
       if (archivoPortada) {
+        // Limpiar el nombre del archivo para evitar caracteres especiales o espacios
         const portadaExt = archivoPortada.name.split('.').pop();
         const portadaName = `${Date.now()}_portada.${portadaExt}`;
-        const { error: errorPortada } = await supabase.storage.from('portadas').upload(portadaName, archivoPortada);
-        
-        if (!errorPortada) {
+
+        const { error: errorPortada } = await supabase.storage
+          .from('portadas')
+          .upload(portadaName, archivoPortada, { upsert: true });
+
+        if (errorPortada) {
+          console.error('Error portada:', errorPortada);
+          alert('No se pudo subir la imagen: ' + errorPortada.message);
+        } else {
           const { data: dataPortadaUrl } = supabase.storage.from('portadas').getPublicUrl(portadaName);
           urlPortada = dataPortadaUrl.publicUrl;
         }
       }
 
-      // 3. Guardar registro en la Base de Datos
+      // Si no eligió imagen o falló, asigna una imagen genérica limpia de música (NO el micrófono)
+      if (!urlPortada) {
+        urlPortada = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
+      }
+
+      // 3. Guardar en la Base de Datos
       const { error: errorBD } = await supabase.from('canciones').insert([
         {
           titulo,
@@ -54,7 +67,7 @@ export default function SubirCancion() {
 
       if (errorBD) throw errorBD;
 
-      setMensaje('¡Canción subida con éxito! 🎉');
+      setMensaje('¡Canción subida correctamente! 🎉');
       setTitulo('');
       setArtista('');
       setArchivoAudio(null);
@@ -74,10 +87,9 @@ export default function SubirCancion() {
 
       <form onSubmit={handleSubir} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div>
-          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>Título de la canción:</label>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>Título:</label>
           <input 
             type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} 
-            placeholder="Ej: Hata ese día"
             style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
           />
         </div>
@@ -86,13 +98,12 @@ export default function SubirCancion() {
           <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>Artista:</label>
           <input 
             type="text" required value={artista} onChange={(e) => setArtista(e.target.value)} 
-            placeholder="Ej: Lasso"
             style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
           />
         </div>
 
         <div>
-          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>🎵 Archivo MP3 / Audio:</label>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>🎵 Archivo Audio (MP3):</label>
           <input 
             type="file" accept="audio/*" required onChange={(e) => setArchivoAudio(e.target.files?.[0] || null)} 
             style={{ color: 'white' }}
@@ -100,7 +111,7 @@ export default function SubirCancion() {
         </div>
 
         <div>
-          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>🖼️ Imagen de Portada (Selecciona tu foto aquí):</label>
+          <label style={{ display: 'block', color: '#ccc', marginBottom: '5px' }}>🖼️ Selecciona la Foto de Portada:</label>
           <input 
             type="file" accept="image/*" onChange={(e) => setArchivoPortada(e.target.files?.[0] || null)} 
             style={{ color: 'white' }}
