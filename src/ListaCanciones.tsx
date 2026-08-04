@@ -33,7 +33,7 @@ export function ListaCanciones({ alReproducir }: ListaCancionesProps) {
   };
 
   const reproducir = (cancion: any) => {
-    if (alReproducir) {
+    if (typeof alReproducir === 'function') {
       alReproducir(cancion);
     }
   };
@@ -56,13 +56,13 @@ export function ListaCanciones({ alReproducir }: ListaCancionesProps) {
             <div 
               key={cancion.id} 
               style={{ 
-                backgroundColor: '#18181c', 
+                backgroundColor: '#121212', 
                 borderRadius: '12px', 
                 padding: '16px', 
                 display: 'flex', 
                 flexDirection: 'column', 
                 alignItems: 'center',
-                border: '1px solid #28282e'
+                border: '1px solid #222222'
               }}
             >
               <img 
