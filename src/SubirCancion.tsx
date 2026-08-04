@@ -20,7 +20,7 @@ export default function SubirCancion() {
     setMensaje('Subiendo canción e imagen...');
 
     try {
-      // 1. Subir Audio
+      // 1. Subir Audio a canciones
       const audioExt = archivoAudio.name.split('.').pop();
       const audioName = `${Date.now()}_audio.${audioExt}`;
       const { error: errorAudio } = await supabase.storage.from('canciones').upload(audioName, archivoAudio);
@@ -29,11 +29,10 @@ export default function SubirCancion() {
       const { data: dataAudioUrl } = supabase.storage.from('canciones').getPublicUrl(audioName);
       const urlAudio = dataAudioUrl.publicUrl;
 
-      // 2. Subir Portada Personalizada
+      // 2. Subir Foto a portadas
       let urlPortada = '';
 
       if (archivoPortada) {
-        // Limpiar el nombre del archivo para evitar caracteres especiales o espacios
         const portadaExt = archivoPortada.name.split('.').pop();
         const portadaName = `${Date.now()}_portada.${portadaExt}`;
 
@@ -41,33 +40,25 @@ export default function SubirCancion() {
           .from('portadas')
           .upload(portadaName, archivoPortada, { upsert: true });
 
-        if (errorPortada) {
-          console.error('Error portada:', errorPortada);
-          alert('No se pudo subir la imagen: ' + errorPortada.message);
-        } else {
+        if (!errorPortada) {
           const { data: dataPortadaUrl } = supabase.storage.from('portadas').getPublicUrl(portadaName);
           urlPortada = dataPortadaUrl.publicUrl;
         }
       }
 
-      // Si no eligió imagen o falló, asigna una imagen genérica limpia de música (NO el micrófono)
-      if (!urlPortada) {
-        urlPortada = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
-      }
-
-      // 3. Guardar en la Base de Datos
+      // 3. Guardar en la tabla de la Base de Datos
       const { error: errorBD } = await supabase.from('canciones').insert([
         {
-          titulo,
-          artista,
-          url_archivo: urlAudio,
-          url_portada: urlPortada,
+          titulo: titulo,
+          artista: artista,
+          url_audio: urlAudio,
+          url_portada: urlPortada || null
         }
       ]);
 
       if (errorBD) throw errorBD;
 
-      setMensaje('¡Canción subida correctamente! 🎉');
+      setMensaje('¡Canción subida con éxito! 🎉');
       setTitulo('');
       setArtista('');
       setArchivoAudio(null);
