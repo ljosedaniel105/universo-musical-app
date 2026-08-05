@@ -216,4 +216,116 @@ export default function App() {
                 backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent',
                 color: seccion === 'playlists' ? '#ff5500' : '#8f929d',
                 fontWeight: seccion === 'playlists' ? '600' : '500',
-                cursor: '
+                cursor: 'pointer', textAlign: 'left', fontSize: '14px', transition: '0.2s'
+              }}
+            >
+              <IconPlaylists /> Mis Playlists
+            </button>
+
+            {/* SUBIR MÚSICA */}
+            <button 
+              onClick={() => setSeccion('subir')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px',
+                border: seccion === 'subir' ? '1px solid #d95300' : '1px solid transparent',
+                backgroundColor: seccion === 'subir' ? '#1c0c03' : 'transparent',
+                color: seccion === 'subir' ? '#ff5500' : '#8f929d',
+                fontWeight: seccion === 'subir' ? '600' : '500',
+                cursor: 'pointer', textAlign: 'left', fontSize: '14px', transition: '0.2s'
+              }}
+            >
+              <IconUpload /> Subir Música
+            </button>
+
+            {/* ADMIN PANEL */}
+            <button 
+              onClick={() => setSeccion('admin')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px',
+                border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent',
+                backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent',
+                color: seccion === 'admin' ? '#ff5500' : '#8f929d',
+                fontWeight: seccion === 'admin' ? '600' : '500',
+                cursor: 'pointer', textAlign: 'left', fontSize: '14px', transition: '0.2s'
+              }}
+            >
+              <IconAdmin /> Admin Panel
+            </button>
+
+          </nav>
+        </div>
+
+        {/* PARTE INFERIOR: ELIMINAR CUENTA Y TARJETA DE PERFIL */}
+        <div>
+          
+          <button 
+            onClick={eliminarCuenta}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'transparent', color: '#555861', border: 'none',
+              fontSize: '13px', cursor: 'pointer', marginBottom: '18px', paddingLeft: '8px', fontWeight: '500'
+            }}
+          >
+            <IconDelete /> Eliminar mi cuenta
+          </button>
+
+          <div style={{ borderTop: '1px solid #141418', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', color: 'white', fontWeight: 'bold' }}>
+              👤
+            </div>
+            <div style={{ overflow: 'hidden', flex: 1 }}>
+              <h4 style={{ margin: 0, fontSize: '13px', color: '#ffffff', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                {apodoUsuario}
+              </h4>
+              <p style={{ margin: 0, fontSize: '11px', color: '#555861', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                {session.user.email}
+              </p>
+            </div>
+            <button 
+              onClick={handleLogout} 
+              title="Cerrar Sesión" 
+              style={{ backgroundColor: 'transparent', border: 'none', color: '#555861', cursor: 'pointer', fontSize: '16px', padding: 0 }}
+            >
+              🚪
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* CONTENIDO PRINCIPAL */}
+      <div style={{ marginLeft: '250px', flex: 1, padding: '30px', paddingBottom: cancionActual ? '100px' : '30px' }}>
+        {seccion === 'descubrir' && <ListaCanciones alSeleccionarCancion={(c) => setCancionActual(c)} />}
+        {seccion === 'playlists' && <div style={{ color: '#aaa', padding: '20px' }}>📜 Tus playlists aparecerán aquí.</div>}
+        {seccion === 'subir' && <SubirCancion />}
+        {seccion === 'admin' && <PanelAdmin />}
+      </div>
+
+      {/* REPRODUCTOR DE AUDIO */}
+      {cancionActual && (
+        <div style={{ position: 'fixed', bottom: 0, left: '250px', right: 0, backgroundColor: '#141417', borderTop: '1px solid #2a2a30', padding: '12px 25px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1000 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <img 
+              src={cancionActual.portada_url || cancionActual.url_portada || PORTADA_DEFAULT} 
+              alt={cancionActual.titulo} 
+              onError={(e: any) => { e.target.src = PORTADA_DEFAULT; }}
+              style={{ width: '45px', height: '45px', borderRadius: '6px', objectFit: 'cover' }} 
+            />
+            <div>
+              <h4 style={{ margin: 0, color: 'white', fontSize: '14px' }}>{cancionActual.titulo}</h4>
+              <p style={{ margin: '2px 0 0 0', color: '#aaa', fontSize: '12px' }}>{cancionActual.artista}</p>
+            </div>
+          </div>
+
+          <audio 
+            controls 
+            autoPlay 
+            src={cancionActual.url_audio || cancionActual.url_archivo} 
+            style={{ width: '500px' }} 
+          />
+        </div>
+      )}
+
+    </div>
+  );
+}
