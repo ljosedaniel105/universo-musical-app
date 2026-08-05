@@ -20,11 +20,8 @@ const IconUpload = () => (
 const IconAdmin = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
 );
-const IconDelete = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-);
 
-// Reproductor Personalizado con Menú de 3 Puntos
+// Reproductor Personalizado
 const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -111,7 +108,7 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
             <button onClick={descargarCancion} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
               📥 Descargar
             </button>
-            <button onClick={() => { alert("Próximamente: Elegir Playlist"); setMenuAbierto(false); }} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button onClick={() => { alert("Añadir a playlist"); setMenuAbierto(false); }} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
               ➕ Agregar a Playlist
             </button>
             <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
@@ -130,6 +127,12 @@ export default function App() {
   const [seccion, setSeccion] = useState<'descubrir' | 'playlists' | 'subir' | 'admin'>('descubrir');
   const [cancionActual, setCancionActual] = useState<any>(null);
 
+  // Estados para Playlists
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [mostrarModalPlaylist, setMostrarModalPlaylist] = useState(false);
+  const [nombreNuevaPlaylist, setNombreNuevaPlaylist] = useState('');
+
+  // Login / Auth
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -139,11 +142,17 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }: any) => {
       setSession(session);
-      if (session) cargarPerfil(session.user.id);
+      if (session) {
+        cargarPerfil(session.user.id);
+        cargarPlaylists(session.user.id);
+      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setSession(session);
-      if (session) cargarPerfil(session.user.id);
+      if (session) {
+        cargarPerfil(session.user.id);
+        cargarPlaylists(session.user.id);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -151,6 +160,28 @@ export default function App() {
   const cargarPerfil = async (userId: string) => {
     const { data } = await supabase.from('perfiles').select('*').eq('id', userId).single();
     if (data) setPerfil(data);
+  };
+
+  const cargarPlaylists = async (userId: string) => {
+    const { data } = await supabase.from('playlists').select('*').eq('usuario_id', userId);
+    if (data) setPlaylists(data);
+  };
+
+  const crearNuevaPlaylist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nombreNuevaPlaylist.trim() || !session) return;
+
+    const { data, error } = await supabase.from('playlists').insert([
+      { nombre: nombreNuevaPlaylist, usuario_id: session.user.id }
+    ]).select();
+
+    if (error) {
+      alert("Error al crear la playlist: " + error.message);
+    } else if (data) {
+      setPlaylists([...playlists, ...data]);
+      setNombreNuevaPlaylist('');
+      setMostrarModalPlaylist(false);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -188,9 +219,13 @@ export default function App() {
 
   return (
     <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', color: 'white', fontFamily: 'sans-serif' }}>
+      {/* Sidebar Navigation */}
       <div style={{ width: '250px', backgroundColor: '#08080a', borderRight: '1px solid #141418', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 18px', boxSizing: 'border-box', height: '100vh', position: 'fixed', left: 0, top: 0 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}><img src={LOGO_URL} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%' }} /><h1 style={{ fontSize: '18px', fontWeight: '800', color: '#ffffff' }}>UNIVERSO</h1></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
+            <img src={LOGO_URL} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%' }} />
+            <h1 style={{ fontSize: '18px', fontWeight: '800', color: '#ffffff' }}>UNIVERSO</h1>
+          </div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button onClick={() => setSeccion('descubrir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'descubrir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'descubrir' ? '#1c0c03' : 'transparent', color: seccion === 'descubrir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconHome /> Descubrir</button>
             <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'playlists' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent', color: seccion === 'playlists' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconPlaylists /> Mis Playlists</button>
@@ -201,16 +236,76 @@ export default function App() {
         <div>
           <div style={{ borderTop: '1px solid #141418', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>👤</div>
-            <div style={{ overflow: 'hidden', flex: 1 }}><h4 style={{ margin: 0, fontSize: '13px' }}>{perfil?.apodo || session.user.email.split('@')[0]}</h4><p style={{ margin: 0, fontSize: '11px', color: '#555861' }}>{session.user.email}</p></div>
+            <div style={{ overflow: 'hidden', flex: 1 }}>
+              <h4 style={{ margin: 0, fontSize: '13px' }}>{perfil?.apodo || session.user.email.split('@')[0]}</h4>
+              <p style={{ margin: 0, fontSize: '11px', color: '#555861' }}>{session.user.email}</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Main Content Area */}
       <div style={{ marginLeft: '250px', flex: 1, padding: '30px', paddingBottom: cancionActual ? '100px' : '30px' }}>
         {seccion === 'descubrir' && <ListaCanciones alSeleccionarCancion={(c: any) => setCancionActual(c)} />}
-        {seccion === 'playlists' && <div style={{ color: '#aaa' }}>📜 Playlists en desarrollo.</div>}
+
+        {seccion === 'playlists' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Mis Playlists</h2>
+              <button 
+                onClick={() => setMostrarModalPlaylist(true)} 
+                style={{ backgroundColor: '#ff6b00', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                ➕ Crear Playlist
+              </button>
+            </div>
+
+            {playlists.length === 0 ? (
+              <p style={{ color: '#888' }}>No tienes playlists creadas aún. ¡Haz clic arriba para crear tu primera lista!</p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
+                {playlists.map((pl) => (
+                  <div key={pl.id} style={{ backgroundColor: '#18181c', borderRadius: '12px', padding: '16px', border: '1px solid #2a2a30' }}>
+                    <div style={{ width: '100%', height: '140px', backgroundColor: '#26262c', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', marginBottom: '12px' }}>
+                      🎵
+                    </div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>{pl.nombre}</h4>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Playlist personal</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {seccion === 'subir' && <SubirCancion />}
         {seccion === 'admin' && <PanelAdmin />}
       </div>
+
+      {/* Modal para Crear Playlist */}
+      {mostrarModalPlaylist && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ backgroundColor: '#18181c', padding: '30px', borderRadius: '16px', border: '1px solid #2a2a30', width: '90%', maxWidth: '400px' }}>
+            <h3 style={{ marginTop: 0, color: '#ff6b00' }}>Nueva Playlist</h3>
+            <form onSubmit={crearNuevaPlaylist} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <input 
+                type="text" 
+                placeholder="Nombre de la playlist..." 
+                value={nombreNuevaPlaylist} 
+                onChange={(e) => setNombreNuevaPlaylist(e.target.value)} 
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
+                autoFocus
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" onClick={() => setMostrarModalPlaylist(false)} style={{ backgroundColor: 'transparent', border: 'none', color: '#aaa', padding: '10px', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Crear</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Player */}
       {cancionActual && <ReproductorPersonalizado cancion={cancionActual} />}
     </div>
   );
