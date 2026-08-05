@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
+import { supabase } from './supabase';
 import ListaCanciones from './ListaCanciones';
 import SubirCancion from './SubirCancion';
 import PanelAdmin from './PanelAdmin';
