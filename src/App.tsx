@@ -7,6 +7,9 @@ import PanelAdmin from './PanelAdmin';
 
 const LOGO_URL = "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
 
+// Correo fijado para el Administrador
+const ADMIN_EMAIL = "ljosedaniel105@gmail.com"; 
+
 // Iconos
 const IconHome = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
@@ -210,6 +213,8 @@ export default function App() {
     }
   };
 
+  const esAdmin = session?.user?.email === ADMIN_EMAIL;
+
   if (!session) {
     return (
       <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
@@ -233,7 +238,6 @@ export default function App() {
       {/* Sidebar Navigation */}
       <div style={{ width: '250px', backgroundColor: '#08080a', borderRight: '1px solid #141418', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 18px', boxSizing: 'border-box', height: '100vh', position: 'fixed', left: 0, top: 0 }}>
         <div>
-          {/* HEADER DEL SIDEBAR - AHORA DICE UNIVERSO MUSICAL */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
             <img src={LOGO_URL} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
             <h1 style={{ fontSize: '15px', fontWeight: '800', color: '#ffffff', letterSpacing: '0.5px', margin: 0, whiteSpace: 'nowrap' }}>UNIVERSO MUSICAL</h1>
@@ -243,7 +247,11 @@ export default function App() {
             <button onClick={() => setSeccion('descubrir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'descubrir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'descubrir' ? '#1c0c03' : 'transparent', color: seccion === 'descubrir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconHome /> Descubrir</button>
             <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'playlists' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent', color: seccion === 'playlists' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconPlaylists /> Mis Playlists</button>
             <button onClick={() => setSeccion('subir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'subir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'subir' ? '#1c0c03' : 'transparent', color: seccion === 'subir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconUpload /> Subir Música</button>
-            <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent', color: seccion === 'admin' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconAdmin /> Admin Panel</button>
+            
+            {/* Solo se mostrará si entras con ljosedaniel105@gmail.com */}
+            {esAdmin && (
+              <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent', color: seccion === 'admin' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconAdmin /> Admin Panel</button>
+            )}
           </nav>
         </div>
 
@@ -315,7 +323,7 @@ export default function App() {
         )}
 
         {seccion === 'subir' && <SubirCancion />}
-        {seccion === 'admin' && <PanelAdmin />}
+        {seccion === 'admin' && esAdmin && <PanelAdmin />}
       </div>
 
       {/* Modal para Crear Playlist */}
