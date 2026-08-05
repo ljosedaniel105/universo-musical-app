@@ -233,10 +233,12 @@ export default function App() {
       {/* Sidebar Navigation */}
       <div style={{ width: '250px', backgroundColor: '#08080a', borderRight: '1px solid #141418', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 18px', boxSizing: 'border-box', height: '100vh', position: 'fixed', left: 0, top: 0 }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
-            <img src={LOGO_URL} alt="Logo" style={{ width: '38px', height: '38px', borderRadius: '50%' }} />
-            <h1 style={{ fontSize: '18px', fontWeight: '800', color: '#ffffff' }}>UNIVERSO</h1>
+          {/* HEADER DEL SIDEBAR - AHORA DICE UNIVERSO MUSICAL */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
+            <img src={LOGO_URL} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
+            <h1 style={{ fontSize: '15px', fontWeight: '800', color: '#ffffff', letterSpacing: '0.5px', margin: 0, whiteSpace: 'nowrap' }}>UNIVERSO MUSICAL</h1>
           </div>
+
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <button onClick={() => setSeccion('descubrir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'descubrir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'descubrir' ? '#1c0c03' : 'transparent', color: seccion === 'descubrir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconHome /> Descubrir</button>
             <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'playlists' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent', color: seccion === 'playlists' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconPlaylists /> Mis Playlists</button>
