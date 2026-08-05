@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabase';
 import ListaCanciones from './ListaCanciones';
 import SubirCancion from './SubirCancion';
@@ -7,7 +7,7 @@ import PanelAdmin from './PanelAdmin';
 // URL de tu Logo Oficial
 const LOGO_URL = "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
 
-// Iconos estilo Lineal/Outline sin color relleno
+// Iconos estilo Lineal/Outline
 const IconHome = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -47,6 +47,156 @@ const IconDelete = () => (
   </svg>
 );
 
+// Componente del Reproductor de Audio Personalizado
+const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const audioUrl = cancion?.url_audio || cancion?.url_archivo;
+  const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  }, [cancion]);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+      setDuration(audioRef.current.duration || 0);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      left: '250px',
+      right: 0,
+      backgroundColor: '#0c0c0e',
+      borderTop: '1px solid #ff6b0033',
+      padding: '12px 30px',
+      display: 'flex',
+      alignItems: 'center',
+      justify: 'space-between',
+      zIndex: 1000,
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
+    }}>
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleTimeUpdate}
+        onEnded={() => setIsPlaying(false)}
+      />
+
+      {/* Info Canción */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', minWidth: '200px' }}>
+        <img
+          src={cancion.portada_url || cancion.url_portada || PORTADA_DEFAULT}
+          alt={cancion.titulo}
+          onError={(e: any) => { e.target.src = PORTADA_DEFAULT; }}
+          style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #222' }}
+        />
+        <div>
+          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px', fontWeight: '600' }}>{cancion.titulo}</h4>
+          <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px', fontWeight: '500' }}>{cancion.artista}</p>
+        </div>
+      </div>
+
+      {/* Controles de Reproducción y Barra de Progreso */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, maxWidth: '600px', margin: '0 20px' }}>
+        
+        {/* Botón Play/Pausa */}
+        <button
+          onClick={togglePlay}
+          style={{
+            width: '38px',
+            height: '38px',
+            borderRadius: '50%',
+            backgroundColor: '#ff6b00',
+            border: 'none',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            boxShadow: '0 0 10px rgba(255, 107, 0, 0.4)',
+            transition: 'transform 0.1s ease'
+          }}
+        >
+          {isPlaying ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+              <rect x="6" y="4" width="4" height="16" rx="1" />
+              <rect x="14" y="4" width="4" height="16" rx="1" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style={{ marginLeft: '2px' }}>
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
+          )}
+        </button>
+
+        {/* Barra de Tiempo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+          <span style={{ fontSize: '11px', color: '#888', minWidth: '35px', textAlign: 'right' }}>{formatTime(currentTime)}</span>
+          
+          <input
+            type="range"
+            min="0"
+            max={duration || 0}
+            value={currentTime}
+            onChange={handleSeek}
+            style={{
+              flex: 1,
+              height: '4px',
+              accentColor: '#ff6b00',
+              cursor: 'pointer',
+              backgroundColor: '#222',
+              borderRadius: '2px'
+            }}
+          />
+
+          <span style={{ fontSize: '11px', color: '#888', minWidth: '35px' }}>{formatTime(duration)}</span>
+        </div>
+      </div>
+
+      {/* Espaciador lateral para mantener equilibrio */}
+      <div style={{ width: '200px' }}></div>
+    </div>
+  );
+};
+
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [perfil, setPerfil] = useState<any>(null);
@@ -59,8 +209,6 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [apodo, setApodo] = useState('');
   const [authError, setAuthError] = useState('');
-
-  const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -257,7 +405,6 @@ export default function App() {
 
         {/* PARTE INFERIOR: ELIMINAR CUENTA Y TARJETA DE PERFIL */}
         <div>
-          
           <button 
             onClick={eliminarCuenta}
             style={{
@@ -288,7 +435,6 @@ export default function App() {
               🚪
             </button>
           </div>
-
         </div>
 
       </div>
@@ -301,30 +447,8 @@ export default function App() {
         {seccion === 'admin' && <PanelAdmin />}
       </div>
 
-      {/* REPRODUCTOR DE AUDIO */}
-      {cancionActual && (
-        <div style={{ position: 'fixed', bottom: 0, left: '250px', right: 0, backgroundColor: '#141417', borderTop: '1px solid #2a2a30', padding: '12px 25px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1000 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <img 
-              src={cancionActual.portada_url || cancionActual.url_portada || PORTADA_DEFAULT} 
-              alt={cancionActual.titulo} 
-              onError={(e: any) => { e.target.src = PORTADA_DEFAULT; }}
-              style={{ width: '45px', height: '45px', borderRadius: '6px', objectFit: 'cover' }} 
-            />
-            <div>
-              <h4 style={{ margin: 0, color: 'white', fontSize: '14px' }}>{cancionActual.titulo}</h4>
-              <p style={{ margin: '2px 0 0 0', color: '#aaa', fontSize: '12px' }}>{cancionActual.artista}</p>
-            </div>
-          </div>
-
-          <audio 
-            controls 
-            autoPlay 
-            src={cancionActual.url_audio || cancionActual.url_archivo} 
-            style={{ width: '500px' }} 
-          />
-        </div>
-      )}
+      {/* REPRODUCTOR PERSONALIZADO EN NEGRO Y NARANJA */}
+      {cancionActual && <ReproductorPersonalizado cancion={cancionActual} />}
 
     </div>
   );
