@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
+import { supabase } from './supabase';
 
 export default function ListaCanciones({ alSeleccionarCancion }: { alSeleccionarCancion: (cancion: any) => void }) {
   const [canciones, setCanciones] = useState<any[]>([]);
@@ -33,7 +33,6 @@ export default function ListaCanciones({ alSeleccionarCancion }: { alSeleccionar
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
           {canciones.map((cancion) => {
-            // Verifica si la URL parece una imagen válida
             let portadaInicial = cancion.portada_url || cancion.url_portada;
             
             if (!portadaInicial || portadaInicial.includes('.mp3') || portadaInicial.trim() === '') {
@@ -49,7 +48,6 @@ export default function ListaCanciones({ alSeleccionarCancion }: { alSeleccionar
                   src={portadaInicial} 
                   alt={cancion.titulo} 
                   onError={(e: any) => {
-                    // Si la imagen falla al cargar, pon el fondo por defecto
                     e.target.src = PORTADA_DEFAULT;
                   }}
                   style={{ width: '100%', height: '180px', borderRadius: '8px', objectFit: 'cover' }}
