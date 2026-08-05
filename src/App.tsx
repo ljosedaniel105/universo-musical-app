@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+// @ts-ignore
 import { supabase } from './supabase';
 import ListaCanciones from './ListaCanciones';
 import SubirCancion from './SubirCancion';
@@ -108,7 +109,7 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
       padding: '12px 30px',
       display: 'flex',
       alignItems: 'center',
-      justify: 'space-between',
+      justifyContent: 'space-between',
       zIndex: 1000,
       boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
     }}>
@@ -211,12 +212,12 @@ export default function App() {
   const [authError, setAuthError] = useState('');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
       setSession(session);
       if (session) cargarPerfil(session.user.id);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setSession(session);
       if (session) cargarPerfil(session.user.id);
     });
@@ -441,7 +442,7 @@ export default function App() {
 
       {/* CONTENIDO PRINCIPAL */}
       <div style={{ marginLeft: '250px', flex: 1, padding: '30px', paddingBottom: cancionActual ? '100px' : '30px' }}>
-        {seccion === 'descubrir' && <ListaCanciones alSeleccionarCancion={(c) => setCancionActual(c)} />}
+        {seccion === 'descubrir' && <ListaCanciones alSeleccionarCancion={(c: any) => setCancionActual(c)} />}
         {seccion === 'playlists' && <div style={{ color: '#aaa', padding: '20px' }}>📜 Tus playlists aparecerán aquí.</div>}
         {seccion === 'subir' && <SubirCancion />}
         {seccion === 'admin' && <PanelAdmin />}
