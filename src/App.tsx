@@ -4,7 +4,31 @@ import ListaCanciones from './ListaCanciones';
 import SubirCancion from './SubirCancion';
 import PanelAdmin from './PanelAdmin';
 
-// Componentes de Iconos en SVG (Sin color, trazo outline igual a la imagen)
+// Componente del Logo Oficial UNIVERSO (Galaxia con Nota Musical)
+const LogoUniverso = () => (
+  <div style={{
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, #2563eb 0%, #000000 85%)',
+    boxShadow: '0 0 12px rgba(37, 99, 235, 0.6)',
+    display: 'flex',
+    alignItems: 'center',
+    justify: 'center',
+    border: '1px solid #1d4ed8'
+  }}>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      {/* Órbita exterior / Espiral */}
+      <ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-30 12 12)" stroke="#93c5fd" strokeWidth="1.2" opacity="0.8" />
+      {/* Nota musical al centro */}
+      <path d="M9 18V9l7-2v9" fill="none" stroke="#ffffff" strokeWidth="2" />
+      <circle cx="7.5" cy="18" r="2" fill="#ffffff" />
+      <circle cx="14.5" cy="16" r="2" fill="#ffffff" />
+    </svg>
+  </div>
+);
+
+// Iconos estilo Lineal/Outline
 const IconHome = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -176,12 +200,10 @@ export default function App() {
         
         {/* PARTE SUPERIOR */}
         <div>
-          {/* LOGO UNIVERSO */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', paddingLeft: '6px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #4f46e5, #000000)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #312e81' }}>
-              <span style={{ fontSize: '18px' }}>🌌</span>
-            </div>
-            <h1 style={{ fontSize: '18px', fontWeight: '800', margin: 0, letterSpacing: '1px', color: '#ffffff' }}>UNIVERSO</h1>
+          {/* LOGO OFICIAL UNIVERSO */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '38px', paddingLeft: '4px' }}>
+            <LogoUniverso />
+            <h1 style={{ fontSize: '18px', fontWeight: '800', margin: 0, letterSpacing: '1.2px', color: '#ffffff' }}>UNIVERSO</h1>
           </div>
 
           {/* MENÚ DE OPCIONES */}
