@@ -1,121 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
+import { supabase } from './supabase';
 
 export default function PanelAdmin() {
-  const [tabActual, setTabActual] = useState<'usuarios' | 'canciones'>('usuarios');
-  const [usuarios, setUsuarios] = useState<any[]>([]);
   const [canciones, setCanciones] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    cargarDatos();
+    cargarCanciones();
   }, []);
 
-  const cargarDatos = async () => {
+  const cargarCanciones = async () => {
     setCargando(true);
-    // Cargar Perfiles/Usuarios
-    const { data: dataUsuarios } = await supabase.from('perfiles').select('*');
-    if (dataUsuarios) setUsuarios(dataUsuarios);
-
-    // Cargar Canciones
-    const { data: dataCanciones } = await supabase.from('canciones').select('*');
-    if (dataCanciones) setCanciones(dataCanciones);
-
+    const { data, error } = await supabase.from('canciones').select('*');
+    if (!error && data) {
+      setCanciones(data);
+    }
     setCargando(false);
   };
 
-  const eliminarUsuario = async (id: string) => {
-    if (confirm('¿Estás seguro de que deseas eliminar este usuario de la lista?')) {
-      const { error } = await supabase.from('perfiles').delete().eq('id', id);
-      if (error) {
-        alert('Error al eliminar: ' + error.message);
-      } else {
-        alert('Usuario eliminado con éxito');
-        cargarDatos();
-      }
-    }
-  };
-
   const eliminarCancion = async (id: string) => {
-    if (confirm('¿Estás seguro de eliminar esta canción?')) {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta canción?')) {
       const { error } = await supabase.from('canciones').delete().eq('id', id);
-      if (error) {
-        alert('Error al eliminar canción: ' + error.message);
+      if (!error) {
+        setCanciones(canciones.filter(c => c.id !== id));
       } else {
-        alert('Canción eliminada');
-        cargarDatos();
+        alert('Error al eliminar: ' + error.message);
       }
     }
   };
 
-  if (cargando) return <div style={{ color: 'white' }}>Cargando panel...</div>;
+  if (cargando) {
+    return <div style={{ color: 'white', textAlign: 'center', padding: '20px' }}>Cargando panel...</div>;
+  }
 
   return (
-    <div style={{ backgroundColor: '#1a1a1e', padding: '25px', borderRadius: '16px', border: '1px solid #2a2a30' }}>
-      <h2 style={{ color: '#ff6b00', marginTop: 0 }}>⚙️ Panel de Control Administrador</h2>
-
-      {/* PESTAÑAS */}
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
-        <button 
-          onClick={() => setTabActual('usuarios')}
-          style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: tabActual === 'usuarios' ? '#ff6b00' : '#2a2a30', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-        >
-          👥 Usuarios ({usuarios.length})
-        </button>
-        <button 
-          onClick={() => setTabActual('canciones')}
-          style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: tabActual === 'canciones' ? '#ff6b00' : '#2a2a30', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
-        >
-          🎵 Canciones ({canciones.length})
-        </button>
-      </div>
-
-      {/* VISTA USUARIOS */}
-      {tabActual === 'usuarios' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {usuarios.length === 0 ? (
-            <p style={{ color: '#aaa' }}>No hay usuarios registrados aún en la tabla de perfiles.</p>
-          ) : (
-            usuarios.map((u) => (
-              <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121214', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <h2 style={{ color: '#ff6b00', marginTop: 0, marginBottom: '20px' }}>🔑 Panel de Administración</h2>
+      
+      <div style={{ backgroundColor: '#18181c', padding: '20px', borderRadius: '12px', border: '1px solid #2a2a30' }}>
+        <h3 style={{ color: 'white', marginTop: 0 }}>Gestión de Canciones ({canciones.length})</h3>
+        
+        {canciones.length === 0 ? (
+          <p style={{ color: '#aaa' }}>No hay canciones en el sistema.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {canciones.map((cancion) => (
+              <div 
+                key={cancion.id} 
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0d0d0f', padding: '12px 16px', borderRadius: '8px', border: '1px solid #2a2a30' }}
+              >
                 <div>
-                  <p style={{ margin: 0, fontWeight: 'bold', color: 'white' }}>👤 {u.nombre_usuario || 'Usuario'}</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>{u.email}</p>
+                  <h4 style={{ margin: 0, color: 'white', fontSize: '15px' }}>{cancion.titulo}</h4>
+                  <p style={{ margin: 0, color: '#aaa', fontSize: '13px' }}>{cancion.artista}</p>
                 </div>
                 <button 
-                  onClick={() => eliminarUsuario(u.id)}
-                  style={{ backgroundColor: '#4a1e1e', color: '#ff4d4d', border: '1px solid #ff4d4d', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                  onClick={() => eliminarCancion(cancion.id)}
+                  style={{ backgroundColor: '#ff4d4d', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
                 >
                   🗑️ Eliminar
                 </button>
               </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* VISTA CANCIONES */}
-      {tabActual === 'canciones' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {canciones.map((c) => (
-            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121214', padding: '15px', borderRadius: '8px', border: '1px solid #333' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <img src={c.url_portada} alt={c.titulo} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
-                <div>
-                  <p style={{ margin: 0, fontWeight: 'bold', color: 'white' }}>{c.titulo}</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>{c.artista}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => eliminarCancion(c.id)}
-                style={{ backgroundColor: '#4a1e1e', color: '#ff4d4d', border: '1px solid #ff4d4d', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-              >
-                🗑️ Eliminar
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
