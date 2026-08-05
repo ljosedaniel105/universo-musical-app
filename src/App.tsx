@@ -20,6 +20,9 @@ const IconUpload = () => (
 const IconAdmin = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
 );
+const IconLogout = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+);
 
 // Reproductor Personalizado
 const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
@@ -184,6 +187,13 @@ export default function App() {
     }
   };
 
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setPerfil(null);
+    setCancionActual(null);
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -205,6 +215,7 @@ export default function App() {
       <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
         <div style={{ backgroundColor: '#18181c', padding: '40px', borderRadius: '16px', border: '1px solid #2a2a30', width: '100%', maxWidth: '400px', color: 'white' }}>
           <h2 style={{ textAlign: 'center', color: '#ff6b00' }}>UNIVERSO MUSICAL</h2>
+          {authError && <p style={{ color: '#ff4444', textAlign: 'center', fontSize: '14px' }}>{authError}</p>}
           <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {!isLogin && <input type="text" placeholder="Apodo" value={apodo} onChange={(e) => setApodo(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />}
             <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
@@ -233,7 +244,9 @@ export default function App() {
             <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent', color: seccion === 'admin' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconAdmin /> Admin Panel</button>
           </nav>
         </div>
-        <div>
+
+        {/* Sección de Usuario y Cerrar Sesión */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ borderTop: '1px solid #141418', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>👤</div>
             <div style={{ overflow: 'hidden', flex: 1 }}>
@@ -241,6 +254,27 @@ export default function App() {
               <p style={{ margin: 0, fontSize: '11px', color: '#555861' }}>{session.user.email}</p>
             </div>
           </div>
+
+          <button 
+            onClick={cerrarSesion}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justify: 'center', 
+              gap: '8px', 
+              width: '100%', 
+              padding: '10px', 
+              borderRadius: '10px', 
+              border: '1px solid #ff444433', 
+              backgroundColor: '#1f0d0d', 
+              color: '#ff4444', 
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '13px'
+            }}
+          >
+            <IconLogout /> Cerrar Sesión
+          </button>
         </div>
       </div>
 
