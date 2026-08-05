@@ -120,7 +120,6 @@ export default function App() {
       {/* BARRA LATERAL */}
       <div style={{ width: '260px', backgroundColor: '#18181c', borderRight: '1px solid #2a2a30', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px' }}>
         <div>
-          {/* LOGO CON ICONO DE NOTA MUSICAL */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '35px' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', boxShadow: '0 0 15px rgba(255,107,0,0.5)', flexShrink: 0 }}>
               🎵
@@ -181,7 +180,7 @@ export default function App() {
       {cancionActual && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '80px', backgroundColor: '#18181c', borderTop: '1px solid #2a2a30', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px', zIndex: 100 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '250px' }}>
-            <img src={cancionActual.url_portada} alt={cancionActual.titulo} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+            <img src={cancionActual.portada_url || cancionActual.url_portada || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500'} alt={cancionActual.titulo} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
             <div>
               <h4 style={{ margin: 0, fontSize: '15px', color: 'white' }}>{cancionActual.titulo}</h4>
               <p style={{ margin: 0, fontSize: '13px', color: '#aaa' }}>{cancionActual.artista}</p>
