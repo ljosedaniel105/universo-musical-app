@@ -45,12 +45,24 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteUser = async (id: string) => {
+    const confirmDelete = window.confirm("¿Seguro que deseas eliminar este usuario? Su perfil se eliminará del registro.");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase.from("perfiles").delete().eq("id", id);
+    if (!error) {
+      fetchData();
+    } else {
+      alert("Error al eliminar el usuario: " + error.message);
+    }
+  };
+
   return (
     <div style={{ width: "100%", minHeight: "100vh", backgroundColor: "#0A0A0A", color: "#FFFFFF", padding: "2rem 1.5rem", boxSizing: "border-box" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "2rem" }}>
         
         {/* Encabezado */}
-        <header style={{ display: "flex", itemsCenter: "center", gap: "1rem", textAlign: "left" }}>
+        <header style={{ display: "flex", alignItems: "center", gap: "1rem", textAlign: "left" }}>
           <div style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "0.75rem", borderRadius: "12px", fontSize: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
             🛡️
           </div>
@@ -99,23 +111,33 @@ export default function Admin() {
                   <tr style={{ backgroundColor: "#0A0A0A", borderBottom: "1px solid #262626" }}>
                     <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Nombre / Apodo</th>
                     <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Email / ID</th>
+                    <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA", textAlign: "right" }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={2} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Cargando usuarios...</td>
+                      <td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Cargando usuarios...</td>
                     </tr>
                   ) : users.length > 0 ? (
                     users.map((user) => (
                       <tr key={user.id} style={{ borderBottom: "1px solid #262626" }}>
                         <td style={{ padding: "0.85rem 1rem", fontWeight: 500, color: "#FFFFFF" }}>{user.apodo || user.nombre || "Usuario"}</td>
                         <td style={{ padding: "0.85rem 1rem", color: "#A1A1AA", fontSize: "0.875rem" }}>{user.email || user.id}</td>
+                        <td style={{ padding: "0.85rem 1rem", textAlign: "right" }}>
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.1rem", padding: "0.25rem 0.5rem", borderRadius: "6px" }}
+                            title="Eliminar usuario"
+                          >
+                            🗑️
+                          </button>
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={2} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>No hay usuarios registrados.</td>
+                      <td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>No hay usuarios registrados.</td>
                     </tr>
                   )}
                 </tbody>
