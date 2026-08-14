@@ -27,8 +27,16 @@ const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 );
 
-// Reproductor Personalizado
-const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
+// Reproductor Personalizado con Siguiente y Anterior
+const ReproductorPersonalizado = ({ 
+  cancion, 
+  onNext, 
+  onPrev 
+}: { 
+  cancion: any; 
+  onNext: () => void; 
+  onPrev: () => void; 
+}) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -36,12 +44,12 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [velocidad, setVelocidad] = useState(1);
 
-  const audioUrl = cancion?.url_audio || cancion?.url_archivo;
+  const audioUrl = cancion?.url_audio || cancion?.url_archivo || cancion?.url_cancion || cancion?.url;
   const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.play();
+      audioRef.current.play().catch((e) => console.log("Error al reproducir:", e));
       setIsPlaying(true);
       audioRef.current.playbackRate = velocidad;
     }
@@ -49,15 +57,20 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
 
   const togglePlay = () => {
     if (audioRef.current) {
-      isPlaying ? audioRef.current.pause() : audioRef.current.play();
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
       setIsPlaying(!isPlaying);
     }
   };
 
   const descargarCancion = () => {
+    if (!audioUrl) return;
     const link = document.createElement('a');
     link.href = audioUrl;
-    link.download = `${cancion.titulo}.mp3`;
+    link.download = `${cancion.titulo || 'cancion'}.mp3`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -77,20 +90,61 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
       borderTop: '1px solid #ff6b0033', padding: '12px 30px', display: 'flex',
       alignItems: 'center', justifyContent: 'space-between', zIndex: 1000, boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
     }}>
-      <audio ref={audioRef} src={audioUrl} onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)} onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)} onEnded={() => setIsPlaying(false)} />
+      <audio 
+        ref={audioRef} 
+        src={audioUrl} 
+        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)} 
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)} 
+        onEnded={onNext} // Cambia automáticamente a la siguiente canción al terminar
+      />
 
+      {/* Info Canción */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', minWidth: '220px' }}>
         <img src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} alt={cancion.titulo} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
         <div>
-          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px' }}>{cancion.titulo}</h4>
-          <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px' }}>{cancion.artista}</p>
+          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px' }}>{cancion.titulo || cancion.title || "Sin título"}</h4>
+          <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px' }}>{cancion.artista || cancion.artist || "Artista desconocido"}</p>
         </div>
       </div>
 
+      {/* Controles Centrales (Anterior, Play/Pausa, Siguiente + Barra de Progreso) */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, maxWidth: '500px' }}>
-        <button onClick={togglePlay} style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#ff6b00', border: 'none', color: 'white', cursor: 'pointer' }}>
-          {isPlaying ? <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg> : <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          
+          {/* ⏮️ Botón Anterior */}
+          <button 
+            onClick={onPrev} 
+            style={{ background: 'none', border: 'none', color: '#8f929d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Anterior"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+
+          {/* ▶️ / ⏸️ Botón Play / Pausa */}
+          <button onClick={togglePlay} style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#ff6b00', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {isPlaying ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
+            )}
+          </button>
+
+          {/* ⏭️ Botón Siguiente */}
+          <button 
+            onClick={onNext} 
+            style={{ background: 'none', border: 'none', color: '#8f929d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Siguiente"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+
+        </div>
+
+        {/* Barra de tiempo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
           <span style={{ fontSize: '11px', color: '#888' }}>{Math.floor(currentTime/60)}:{(currentTime%60 < 10 ? '0':'') + Math.floor(currentTime%60)}</span>
           <input type="range" min="0" max={duration || 0} value={currentTime} onChange={(e) => { if(audioRef.current) audioRef.current.currentTime = parseFloat(e.target.value); }} style={{ flex: 1, height: '4px', accentColor: '#ff6b00', cursor: 'pointer' }} />
@@ -98,6 +152,7 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
         </div>
       </div>
 
+      {/* Menú derecho de opciones */}
       <div style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
         <button 
           onClick={() => setMenuAbierto(!menuAbierto)}
@@ -131,7 +186,10 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [perfil, setPerfil] = useState<any>(null);
   const [seccion, setSeccion] = useState<'descubrir' | 'playlists' | 'subir' | 'admin'>('descubrir');
+  
+  // Estado para la canción actual y la cola de reproducción
   const [cancionActual, setCancionActual] = useState<any>(null);
+  const [listaCanciones, setListaCanciones] = useState<any[]>([]);
 
   // Estados para Playlists
   const [playlists, setPlaylists] = useState<any[]>([]);
@@ -213,6 +271,36 @@ export default function App() {
     }
   };
 
+  // Función para reproducir una canción e instruir la cola actual
+  const handlePlaySong = (cancion: any, listaCompleta?: any[]) => {
+    setCancionActual(cancion);
+    if (listaCompleta && listaCompleta.length > 0) {
+      setListaCanciones(listaCompleta);
+    }
+  };
+
+  // Función para avanzar a la siguiente canción
+  const handleNextSong = () => {
+    if (!cancionActual || listaCanciones.length === 0) return;
+    const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
+    if (indexActual !== -1 && indexActual < listaCanciones.length - 1) {
+      setCancionActual(listaCanciones[indexActual + 1]);
+    } else {
+      setCancionActual(listaCanciones[0]); // Vuelve al inicio si está en la última
+    }
+  };
+
+  // Función para regresar a la canción anterior
+  const handlePrevSong = () => {
+    if (!cancionActual || listaCanciones.length === 0) return;
+    const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
+    if (indexActual > 0) {
+      setCancionActual(listaCanciones[indexActual - 1]);
+    } else {
+      setCancionActual(listaCanciones[listaCanciones.length - 1]); // Va a la última si está en la primera
+    }
+  };
+
   const esAdmin = session?.user?.email === ADMIN_EMAIL;
 
   if (!session) {
@@ -248,7 +336,7 @@ export default function App() {
             <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'playlists' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent', color: seccion === 'playlists' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconPlaylists /> Mis Playlists</button>
             <button onClick={() => setSeccion('subir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'subir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'subir' ? '#1c0c03' : 'transparent', color: seccion === 'subir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconUpload /> Subir Música</button>
             
-            {/* Solo se mostrará si entras con ljosedaniel105@gmail.com */}
+            {/* Solo se mostrará si entras con el correo administrador */}
             {esAdmin && (
               <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent', color: seccion === 'admin' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconAdmin /> Admin Panel</button>
             )}
@@ -288,11 +376,11 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content Area (Ajustado para evitar desbordamiento a la derecha) */}
+      {/* Main Content Area */}
       <div style={{ marginLeft: '250px', width: 'calc(100vw - 250px)', maxWidth: 'calc(100vw - 250px)', padding: '30px', paddingBottom: cancionActual ? '120px' : '30px', boxSizing: 'border-box', overflowX: 'hidden' }}>
         {seccion === 'descubrir' && (
           <ListaCanciones 
-            onPlaySong={(c: any) => setCancionActual(c)} 
+            onPlaySong={(c: any, lista?: any[]) => handlePlaySong(c, lista)} 
           />
         )}
 
@@ -353,8 +441,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Player */}
-      {cancionActual && <ReproductorPersonalizado cancion={cancionActual} />}
+      {/* Player Personalizado */}
+      {cancionActual && (
+        <ReproductorPersonalizado 
+          cancion={cancionActual} 
+          onNext={handleNextSong} 
+          onPrev={handlePrevSong} 
+        />
+      )}
     </div>
   );
 }
