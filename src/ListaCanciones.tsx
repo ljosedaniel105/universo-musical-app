@@ -31,31 +31,31 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
     }
   };
 
-  // Filtrar canciones según la pestaña seleccionada
+  // Filtrar canciones según el género seleccionado
   const filteredSongs = selectedGenero === "Todos"
     ? songs
     : songs.filter((song) => song.genero?.toLowerCase() === selectedGenero.toLowerCase());
 
   return (
-    <div style={{ width: "100%", padding: "2rem 1.5rem", boxSizing: "border-box", color: "#FFF" }}>
+    <div style={{ width: "100%", maxWidth: "100%", padding: "1.5rem", boxSizing: "border-box", color: "#FFF", overflowX: "hidden" }}>
       
       {/* Encabezado */}
       <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", textAlign: "left", marginBottom: "1.5rem" }}>
         🌍 Todas las Canciones
       </h1>
 
-      {/* 🏷️ PESTAÑAS / FILTROS DE GÉNEROS */}
+      {/* 🏷️ PESTAÑAS DE GÉNEROS (Solo las pestañas se mueven de lado a lado) */}
       <div
         style={{
           display: "flex",
           gap: "0.75rem",
           overflowX: "auto",
-          paddingBottom: "1rem",
-          marginBottom: "2rem",
-          scrollbarWidth: "none"
+          paddingBottom: "0.75rem",
+          marginBottom: "1.5rem",
+          maxWidth: "100%",
+          boxSizing: "border-box"
         }}
       >
-        {/* Pestaña "Todos" */}
         <button
           onClick={() => setSelectedGenero("Todos")}
           style={{
@@ -67,13 +67,12 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
             fontWeight: selectedGenero === "Todos" ? "bold" : "normal",
             cursor: "pointer",
             whiteSpace: "nowrap",
-            transition: "all 0.2s"
+            flexShrink: 0
           }}
         >
           🔥 Todos
         </button>
 
-        {/* Pestañas de géneros desde la BD */}
         {generos.map((g) => {
           const isActive = selectedGenero.toLowerCase() === g.nombre.toLowerCase();
           return (
@@ -89,7 +88,7 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
                 fontWeight: isActive ? "bold" : "normal",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
-                transition: "all 0.2s"
+                flexShrink: 0
               }}
             >
               {g.nombre}
@@ -98,7 +97,7 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
         })}
       </div>
 
-      {/* 🎵 GRILLA DE TARJETAS */}
+      {/* 🎵 GRILLA DE TARJETAS (Se acomodan verticalmente en filas) */}
       {loading ? (
         <p style={{ color: "#AAA", textAlign: "center" }}>Cargando canciones...</p>
       ) : filteredSongs.length === 0 ? (
@@ -109,8 +108,10 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-            gap: "1.5rem"
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+            gap: "1.25rem",
+            width: "100%",
+            boxSizing: "border-box"
           }}
         >
           {filteredSongs.map((song) => (
@@ -124,7 +125,8 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
-                border: "1px solid #262626"
+                border: "1px solid #262626",
+                boxSizing: "border-box"
               }}
             >
               {/* Carátula */}
@@ -133,7 +135,7 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
                 alt={song.titulo}
                 style={{
                   width: "100%",
-                  height: "180px",
+                  height: "160px",
                   objectFit: "cover",
                   borderRadius: "8px",
                   marginBottom: "0.75rem"
@@ -143,7 +145,7 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
               {/* Título */}
               <h3
                 style={{
-                  fontSize: "1.05rem",
+                  fontSize: "1rem",
                   fontWeight: "bold",
                   margin: "0 0 0.25rem 0",
                   width: "100%",
@@ -156,7 +158,7 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
               </h3>
 
               {/* Artista */}
-              <p style={{ color: "#A1A1AA", fontSize: "0.875rem", margin: 0 }}>
+              <p style={{ color: "#A1A1AA", fontSize: "0.85rem", margin: 0, width: "100%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                 {song.artista || song.artist || "Artista desconocido"}
               </p>
 
@@ -181,8 +183,8 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
                 onClick={() => onPlaySong && onPlaySong(song)}
                 style={{
                   width: "100%",
-                  marginTop: "1rem",
-                  padding: "0.6rem",
+                  marginTop: "0.85rem",
+                  padding: "0.5rem",
                   backgroundColor: "#F97316",
                   color: "#FFF",
                   border: "none",
@@ -192,7 +194,7 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "0.5rem"
+                  gap: "0.4rem"
                 }}
               >
                 ▶ Escuchar
