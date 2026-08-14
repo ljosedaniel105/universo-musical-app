@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../supabase"; // Asegúrate de la ruta a tu cliente supabase
+import { supabase } from "./supabase";
+import { Layout } from "./components/Layout";
 import { Layout } from "../components/Layout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
