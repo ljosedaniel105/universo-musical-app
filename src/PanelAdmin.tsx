@@ -1,6 +1,5 @@
 import { supabase } from "./supabase";
 import { Layout } from "./components/Layout";
-import { Layout } from "../components/Layout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Music, Users, Library, Trash2 } from "lucide-react";
