@@ -146,3 +146,4 @@ const ReproductorPersonalizado = ({
     </div>
   );
 };
+export default App;
