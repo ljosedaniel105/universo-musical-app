@@ -39,21 +39,43 @@ export default function Admin() {
 
     const { error } = await supabase.from("canciones").delete().eq("id", id);
     if (!error) {
+      alert("Canción eliminada correctamente.");
       fetchData();
     } else {
-      alert("Error al eliminar la canción");
+      alert("Error al eliminar la canción: " + error.message);
     }
   };
 
-  const handleDeleteUser = async (id: string) => {
-    const confirmDelete = window.confirm("¿Seguro que deseas eliminar este usuario? Su perfil se eliminará del registro.");
+  const handleDeleteUser = async (userRecord: any) => {
+    const userId = userRecord.id || userRecord.user_id || userRecord.uid;
+    const confirmDelete = window.confirm(
+      `¿Seguro que deseas eliminar al usuario "${userRecord.apodo || userRecord.nombre || userRecord.email}"?`
+    );
     if (!confirmDelete) return;
 
-    const { error } = await supabase.from("perfiles").delete().eq("id", id);
-    if (!error) {
-      fetchData();
+    // Intenta borrar por id
+    let { error, count } = await supabase
+      .from("perfiles")
+      .delete({ count: "exact" })
+      .eq("id", userId);
+
+    // Si falló o no borró filas, intenta buscar por user_id
+    if (error || count === 0) {
+      const retry = await supabase
+        .from("perfiles")
+        .delete({ count: "exact" })
+        .eq("user_id", userId);
+      error = retry.error;
+      count = retry.count;
+    }
+
+    if (error) {
+      alert("Error de Supabase: " + error.message);
+    } else if (count === 0) {
+      alert("No se pudo eliminar el registro. Revisa el campo ID en la tabla 'perfiles'.");
     } else {
-      alert("Error al eliminar el usuario: " + error.message);
+      alert("Usuario eliminado correctamente.");
+      fetchData();
     }
   };
 
@@ -121,12 +143,12 @@ export default function Admin() {
                     </tr>
                   ) : users.length > 0 ? (
                     users.map((user) => (
-                      <tr key={user.id} style={{ borderBottom: "1px solid #262626" }}>
+                      <tr key={user.id || user.user_id} style={{ borderBottom: "1px solid #262626" }}>
                         <td style={{ padding: "0.85rem 1rem", fontWeight: 500, color: "#FFFFFF" }}>{user.apodo || user.nombre || "Usuario"}</td>
                         <td style={{ padding: "0.85rem 1rem", color: "#A1A1AA", fontSize: "0.875rem" }}>{user.email || user.id}</td>
                         <td style={{ padding: "0.85rem 1rem", textAlign: "right" }}>
                           <button
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteUser(user)}
                             style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.1rem", padding: "0.25rem 0.5rem", borderRadius: "6px" }}
                             title="Eliminar usuario"
                           >
