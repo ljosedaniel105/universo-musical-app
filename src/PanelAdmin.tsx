@@ -54,12 +54,18 @@ export default function Admin() {
     const confirmDelete = window.confirm("¿Seguro que deseas eliminar esta canción?");
     if (!confirmDelete) return;
 
-    const { error } = await supabase.from("canciones").delete().eq("id", id);
-    if (!error) {
-      alert("Canción eliminada correctamente.");
-      fetchData();
-    } else {
-      alert("Error al eliminar la canción: " + error.message);
+    try {
+      const { error } = await supabase.from("canciones").delete().eq("id", id);
+      if (!error) {
+        alert("Canción eliminada correctamente.");
+        // 💡 Actualización instantánea de la UI
+        setSongs((prevSongs) => prevSongs.filter((song) => song.id !== id));
+        setStats((prev) => ({ ...prev, totalSongs: prev.totalSongs - 1 }));
+      } else {
+        alert("Error al eliminar la canción: " + error.message);
+      }
+    } catch (err: any) {
+      alert("Error inesperado al eliminar: " + err.message);
     }
   };
 
@@ -138,7 +144,8 @@ export default function Admin() {
         alert("Error al eliminar usuario: " + error.message);
       } else {
         alert("Usuario eliminado correctamente.");
-        fetchData();
+        setUsers((prev) => prev.filter((u) => (u.id || u.user_id || u.uid) !== userId));
+        setStats((prev) => ({ ...prev, totalUsers: prev.totalUsers - 1 }));
       }
     } catch (err: any) {
       alert("Error inesperado: " + err.message);
