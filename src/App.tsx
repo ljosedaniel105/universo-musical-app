@@ -80,7 +80,7 @@ const ReproductorPersonalizado = ({ cancion }: { cancion: any }) => {
       <audio ref={audioRef} src={audioUrl} onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)} onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)} onEnded={() => setIsPlaying(false)} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px', minWidth: '220px' }}>
-        <img src={cancion.portada_url || cancion.url_portada || PORTADA_DEFAULT} alt={cancion.titulo} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
+        <img src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} alt={cancion.titulo} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
         <div>
           <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px' }}>{cancion.titulo}</h4>
           <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px' }}>{cancion.artista}</p>
@@ -234,9 +234,9 @@ export default function App() {
   }
 
   return (
-    <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', color: 'white', fontFamily: 'sans-serif' }}>
+    <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', color: 'white', fontFamily: 'sans-serif', overflowX: 'hidden' }}>
       {/* Sidebar Navigation */}
-      <div style={{ width: '250px', backgroundColor: '#08080a', borderRight: '1px solid #141418', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 18px', boxSizing: 'border-box', height: '100vh', position: 'fixed', left: 0, top: 0 }}>
+      <div style={{ width: '250px', backgroundColor: '#08080a', borderRight: '1px solid #141418', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 18px', boxSizing: 'border-box', height: '100vh', position: 'fixed', left: 0, top: 0, zIndex: 10 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
             <img src={LOGO_URL} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
@@ -270,7 +270,7 @@ export default function App() {
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              justify: 'center', 
+              justifyContent: 'center', 
               gap: '8px', 
               width: '100%', 
               padding: '10px', 
@@ -288,9 +288,13 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div style={{ marginLeft: '250px', flex: 1, padding: '30px', paddingBottom: cancionActual ? '100px' : '30px' }}>
-        {seccion === 'descubrir' && <ListaCanciones alSeleccionarCancion={(c: any) => setCancionActual(c)} />}
+      {/* Main Content Area (Ajustado para evitar desbordamiento a la derecha) */}
+      <div style={{ marginLeft: '250px', width: 'calc(100vw - 250px)', maxWidth: 'calc(100vw - 250px)', padding: '30px', paddingBottom: cancionActual ? '120px' : '30px', boxSizing: 'border-box', overflowX: 'hidden' }}>
+        {seccion === 'descubrir' && (
+          <ListaCanciones 
+            onPlaySong={(c: any) => setCancionActual(c)} 
+          />
+        )}
 
         {seccion === 'playlists' && (
           <div>
