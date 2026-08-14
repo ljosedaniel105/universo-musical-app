@@ -7,7 +7,17 @@ export default function Admin() {
   const [stats, setStats] = useState({ totalUsers: 0, totalSongs: 0, totalPlaylists: 0 });
   const [loading, setLoading] = useState(true);
 
-  // Cargar datos de la base de datos
+  // Listas de géneros y artistas para el selector de edición
+  const [generos, setGeneros] = useState<any[]>([]);
+  const [artistas, setArtistas] = useState<any[]>([]);
+
+  // Estado para la canción que se está editando
+  const [songToEdit, setSongToEdit] = useState<any | null>(null);
+  const [editTitulo, setEditTitulo] = useState("");
+  const [editArtista, setEditArtista] = useState("");
+  const [editGenero, setEditGenero] = useState("");
+
+  // Cargar datos principales y catálogos
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -15,8 +25,13 @@ export default function Admin() {
       const { data: songsData } = await supabase.from("canciones").select("*");
       const { data: playlistsData } = await supabase.from("playlists").select("*");
 
+      const { data: generosData } = await supabase.from("generos").select("*").order("nombre", { ascending: true });
+      const { data: artistasData } = await supabase.from("artistas").select("*").order("nombre", { ascending: true });
+
       if (usersData) setUsers(usersData);
       if (songsData) setSongs(songsData);
+      if (generosData) setGeneros(generosData);
+      if (artistasData) setArtistas(artistasData);
 
       setStats({
         totalUsers: usersData ? usersData.length : 0,
@@ -34,9 +49,9 @@ export default function Admin() {
     fetchData();
   }, []);
 
-  // Función para eliminar canciones
+  // Eliminar Canción
   const handleDeleteSong = async (id: number) => {
-    const confirmDelete = window.confirm("¿Seguro que deseas eliminar esta canción del sistema?");
+    const confirmDelete = window.confirm("¿Seguro que deseas eliminar esta canción?");
     if (!confirmDelete) return;
 
     const { error } = await supabase.from("canciones").delete().eq("id", id);
@@ -48,45 +63,90 @@ export default function Admin() {
     }
   };
 
-  // Función para eliminar usuarios mediante la función RPC de Supabase
+  // Abrir Modal de Edición
+  const handleOpenEdit = (song: any) => {
+    setSongToEdit(song);
+    setEditTitulo(song.titulo || song.title || "");
+    setEditArtista(song.artista || song.artist || "");
+    setEditGenero(song.genero || "");
+  };
+
+  // Guardar Cambios de la Canción
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!songToEdit) return;
+
+    try {
+      const artistaLimpio = editArtista.trim();
+      const generoLimpio = editGenero.trim();
+
+      // 1. Guardar o verificar si el Artista existe en la tabla 'artistas'
+      if (artistaLimpio) {
+        const { data: artExiste } = await supabase.from("artistas").select("nombre").ilike("nombre", artistaLimpio).maybeSingle();
+        if (!artExiste) {
+          await supabase.from("artistas").insert([{ nombre: artistaLimpio }]);
+        }
+      }
+
+      // 2. Guardar o verificar si el Género existe en la tabla 'generos'
+      if (generoLimpio) {
+        const { data: genExiste } = await supabase.from("generos").select("nombre").ilike("nombre", generoLimpio).maybeSingle();
+        if (!genExiste) {
+          await supabase.from("generos").insert([{ nombre: generoLimpio }]);
+        }
+      }
+
+      // 3. Actualizar la canción
+      const { error } = await supabase
+        .from("canciones")
+        .update({
+          titulo: editTitulo,
+          artista: artistaLimpio,
+          genero: generoLimpio,
+        })
+        .eq("id", songToEdit.id);
+
+      if (error) throw error;
+
+      alert("¡Canción actualizada correctamente!");
+      setSongToEdit(null); // Cerrar modal
+      fetchData(); // Recargar datos
+    } catch (err: any) {
+      alert("Error al actualizar la canción: " + err.message);
+    }
+  };
+
+  // Eliminar Usuario por RPC
   const handleDeleteUser = async (userRecord: any) => {
     const userId = userRecord.id || userRecord.user_id || userRecord.uid;
     const nombreUsuario = userRecord.apodo || userRecord.nombre || userRecord.email || "este usuario";
 
-    const confirmDelete = window.confirm(
-      `¿Seguro que deseas eliminar al usuario "${nombreUsuario}"? Su perfil será borrado del registro.`
-    );
-    if (!confirmDelete) return;
+    if (!window.confirm(`¿Seguro que deseas eliminar al usuario "${nombreUsuario}"?`)) return;
 
     try {
-      // Se invoca la función RPC creada en Supabase con permisos de seguridad elevados
-      const { error } = await supabase.rpc("borrar_usuario_admin", {
-        usuario_id: userId,
-      });
-
+      const { error } = await supabase.rpc("borrar_usuario_admin", { usuario_id: userId });
       if (error) {
-        alert("Error al eliminar el usuario: " + error.message);
-        console.error("Error RPC:", error);
+        alert("Error al eliminar usuario: " + error.message);
       } else {
         alert("Usuario eliminado correctamente.");
-        fetchData(); // Actualiza las tablas en pantalla inmediatamente
+        fetchData();
       }
     } catch (err: any) {
-      alert("Ocurrió un error inesperado: " + err.message);
+      alert("Error inesperado: " + err.message);
     }
   };
 
   return (
-    <div style={{ width: "100%", minHeight: "100vh", backgroundColor: "#0A0A0A", color: "#FFFFFF", padding: "2rem 1.5rem", boxSizing: "border-box" }}>
+    <div style={{ width: "100%", minHeight: "100vh", backgroundColor: "#0A0A0A", color: "#FFFFFF", padding: "2rem 1.5rem", boxSizing: "border-box", fontFamily: "sans-serif" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "2rem" }}>
         
         {/* Encabezado */}
         <header style={{ display: "flex", alignItems: "center", gap: "1rem", textAlign: "left" }}>
-          <div style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "0.75rem", borderRadius: "12px", fontSize: "1.75rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "0.75rem", borderRadius: "12px", fontSize: "1.75rem" }}>
             🛡️
           </div>
           <div>
-            <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", margin: 0, color: "#FFFFFF" }}>Panel de Control</h1>
+            <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", margin: 0 }}>Panel de Control</h1>
             <p style={{ color: "#A1A1AA", margin: "0.25rem 0 0 0", fontSize: "0.95rem" }}>Gestión de recursos y usuarios del sistema.</p>
           </div>
         </header>
@@ -94,113 +154,97 @@ export default function Admin() {
         {/* Tarjetas de Estadísticas */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.25rem" }}>
           <div style={{ backgroundColor: "#171717", border: "1px solid #262626", borderRadius: "12px", padding: "1.25rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", color: "#A1A1AA", fontSize: "0.875rem", fontWeight: 500 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", color: "#A1A1AA", fontSize: "0.875rem" }}>
               <span>Total Usuarios</span>
               <span>👥</span>
             </div>
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#FFFFFF", marginTop: "0.5rem", textAlign: "left" }}>{stats.totalUsers}</div>
+            <div style={{ fontSize: "2rem", fontWeight: "bold", marginTop: "0.5rem", textAlign: "left" }}>{stats.totalUsers}</div>
           </div>
 
           <div style={{ backgroundColor: "#171717", border: "1px solid #262626", borderRadius: "12px", padding: "1.25rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", color: "#A1A1AA", fontSize: "0.875rem", fontWeight: 500 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", color: "#A1A1AA", fontSize: "0.875rem" }}>
               <span>Total Canciones</span>
               <span>🎵</span>
             </div>
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#FFFFFF", marginTop: "0.5rem", textAlign: "left" }}>{stats.totalSongs}</div>
+            <div style={{ fontSize: "2rem", fontWeight: "bold", marginTop: "0.5rem", textAlign: "left" }}>{stats.totalSongs}</div>
           </div>
 
           <div style={{ backgroundColor: "#171717", border: "1px solid #262626", borderRadius: "12px", padding: "1.25rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", color: "#A1A1AA", fontSize: "0.875rem", fontWeight: 500 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", color: "#A1A1AA", fontSize: "0.875rem" }}>
               <span>Total Playlists</span>
               <span>📚</span>
             </div>
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#FFFFFF", marginTop: "0.5rem", textAlign: "left" }}>{stats.totalPlaylists}</div>
+            <div style={{ fontSize: "2rem", fontWeight: "bold", marginTop: "0.5rem", textAlign: "left" }}>{stats.totalPlaylists}</div>
           </div>
         </div>
 
-        {/* Tablas de Gestión */}
+        {/* Tablas */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "2rem" }}>
           
-          {/* Tabla de Usuarios */}
+          {/* Usuarios */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", textAlign: "left" }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: "600", margin: 0, color: "#FFFFFF" }}>Directorio de Usuarios</h2>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600", margin: 0 }}>Directorio de Usuarios</h2>
             <div style={{ backgroundColor: "#171717", borderRadius: "12px", border: "1px solid #262626", overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ backgroundColor: "#0A0A0A", borderBottom: "1px solid #262626" }}>
-                    <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Nombre / Apodo</th>
+                    <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Nombre</th>
                     <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Email / ID</th>
                     <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA", textAlign: "right" }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr>
-                      <td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Cargando usuarios...</td>
-                    </tr>
+                    <tr><td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Cargando...</td></tr>
                   ) : users.length > 0 ? (
                     users.map((user) => (
                       <tr key={user.id || user.user_id} style={{ borderBottom: "1px solid #262626" }}>
-                        <td style={{ padding: "0.85rem 1rem", fontWeight: 500, color: "#FFFFFF" }}>{user.apodo || user.nombre || "Usuario"}</td>
+                        <td style={{ padding: "0.85rem 1rem", fontWeight: 500 }}>{user.apodo || user.nombre || "Usuario"}</td>
                         <td style={{ padding: "0.85rem 1rem", color: "#A1A1AA", fontSize: "0.875rem" }}>{user.email || user.id}</td>
                         <td style={{ padding: "0.85rem 1rem", textAlign: "right" }}>
-                          <button
-                            onClick={() => handleDeleteUser(user)}
-                            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.1rem", padding: "0.25rem 0.5rem", borderRadius: "6px" }}
-                            title="Eliminar usuario"
-                          >
-                            🗑️
-                          </button>
+                          <button onClick={() => handleDeleteUser(user)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem" }} title="Eliminar usuario">🗑️</button>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    <tr>
-                      <td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>No hay usuarios registrados.</td>
-                    </tr>
+                    <tr><td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Sin usuarios.</td></tr>
                   )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Tabla de Canciones */}
+          {/* Canciones con Botón de Edición */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", textAlign: "left" }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: "600", margin: 0, color: "#FFFFFF" }}>Galería de Canciones</h2>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600", margin: 0 }}>Galería de Canciones</h2>
             <div style={{ backgroundColor: "#171717", borderRadius: "12px", border: "1px solid #262626", overflow: "hidden" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ backgroundColor: "#0A0A0A", borderBottom: "1px solid #262626" }}>
                     <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Canción</th>
-                    <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Artista</th>
+                    <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA" }}>Artista / Género</th>
                     <th style={{ padding: "0.85rem 1rem", fontSize: "0.75rem", textTransform: "uppercase", color: "#A1A1AA", textAlign: "right" }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr>
-                      <td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Cargando canciones...</td>
-                    </tr>
+                    <tr><td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Cargando...</td></tr>
                   ) : songs.length > 0 ? (
                     songs.map((song) => (
                       <tr key={song.id} style={{ borderBottom: "1px solid #262626" }}>
-                        <td style={{ padding: "0.85rem 1rem", fontWeight: 500, color: "#FFFFFF" }}>{song.titulo || song.title || "Sin título"}</td>
-                        <td style={{ padding: "0.85rem 1rem", color: "#A1A1AA", fontSize: "0.875rem" }}>{song.artista || song.artist || "Desconocido"}</td>
-                        <td style={{ padding: "0.85rem 1rem", textAlign: "right" }}>
-                          <button
-                            onClick={() => handleDeleteSong(song.id)}
-                            style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.1rem", padding: "0.25rem 0.5rem", borderRadius: "6px" }}
-                            title="Eliminar canción"
-                          >
-                            🗑️
-                          </button>
+                        <td style={{ padding: "0.85rem 1rem", fontWeight: 500 }}>{song.titulo || song.title || "Sin título"}</td>
+                        <td style={{ padding: "0.85rem 1rem", color: "#A1A1AA", fontSize: "0.85rem" }}>
+                          <div>{song.artista || song.artist || "Desconocido"}</div>
+                          <span style={{ fontSize: "0.75rem", color: "#F97316" }}>{song.genero || "Sin género"}</span>
+                        </td>
+                        <td style={{ padding: "0.85rem 1rem", textAlign: "right", whiteSpace: "nowrap" }}>
+                          <button onClick={() => handleOpenEdit(song)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem", marginRight: "0.5rem" }} title="Editar canción">✏️</button>
+                          <button onClick={() => handleDeleteSong(song.id)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.1rem" }} title="Eliminar canción">🗑️</button>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    <tr>
-                      <td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>No hay canciones en el sistema.</td>
-                    </tr>
+                    <tr><td colSpan={3} style={{ padding: "1rem", textAlign: "center", color: "#71717A" }}>Sin canciones.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -208,7 +252,84 @@ export default function Admin() {
           </div>
 
         </div>
+
       </div>
+
+      {/* MODAL DE EDICIÓN DE CANCIÓN */}
+      {songToEdit && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+          <div style={{ backgroundColor: "#171717", padding: "2rem", borderRadius: "12px", border: "1px solid #333", width: "90%", maxWidth: "450px", textAlign: "left" }}>
+            <h3 style={{ marginTop: 0, color: "#F97316" }}>✏️ Editar Canción</h3>
+            <form onSubmit={handleSaveEdit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              
+              <div>
+                <label style={{ fontSize: "0.85rem", color: "#AAA" }}>Título:</label>
+                <input
+                  type="text"
+                  required
+                  value={editTitulo}
+                  onChange={(e) => setEditTitulo(e.target.value)}
+                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: "0.85rem", color: "#AAA" }}>Artista / Banda:</label>
+                <input
+                  type="text"
+                  list="artistas-list"
+                  required
+                  value={editArtista}
+                  onChange={(e) => setEditArtista(e.target.value)}
+                  placeholder="Selecciona o escribe un artista"
+                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+                />
+                <datalist id="artistas-list">
+                  {artistas.map((a) => (
+                    <option key={a.id} value={a.nombre} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "0.85rem", color: "#AAA" }}>Género Musical:</label>
+                <input
+                  type="text"
+                  list="generos-list"
+                  required
+                  value={editGenero}
+                  onChange={(e) => setEditGenero(e.target.value)}
+                  placeholder="Selecciona o escribe un género"
+                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+                />
+                <datalist id="generos-list">
+                  {generos.map((g) => (
+                    <option key={g.id} value={g.nombre} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
+                <button
+                  type="button"
+                  onClick={() => setSongToEdit(null)}
+                  style={{ padding: "0.6rem 1rem", borderRadius: "6px", border: "1px solid #444", backgroundColor: "transparent", color: "#CCC", cursor: "pointer" }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{ padding: "0.6rem 1rem", borderRadius: "6px", border: "none", backgroundColor: "#F97316", color: "#FFF", fontWeight: "bold", cursor: "pointer" }}
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
