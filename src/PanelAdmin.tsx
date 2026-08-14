@@ -7,11 +7,11 @@ export default function Admin() {
   const [stats, setStats] = useState({ totalUsers: 0, totalSongs: 0, totalPlaylists: 0 });
   const [loading, setLoading] = useState(true);
 
-  // Listas de géneros y artistas para el selector de edición
+  // Listas de géneros y artistas para los selectores
   const [generos, setGeneros] = useState<any[]>([]);
   const [artistas, setArtistas] = useState<any[]>([]);
 
-  // Estado para la canción que se está editando
+  // Estado para el modal de edición de canciones
   const [songToEdit, setSongToEdit] = useState<any | null>(null);
   const [editTitulo, setEditTitulo] = useState("");
   const [editArtista, setEditArtista] = useState("");
@@ -71,7 +71,7 @@ export default function Admin() {
     setEditGenero(song.genero || "");
   };
 
-  // Guardar Cambios de la Canción
+  // Guardar Cambios de la Canción Editada
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!songToEdit) return;
@@ -80,7 +80,7 @@ export default function Admin() {
       const artistaLimpio = editArtista.trim();
       const generoLimpio = editGenero.trim();
 
-      // 1. Guardar o verificar si el Artista existe en la tabla 'artistas'
+      // 1. Asegurar registro en la tabla 'artistas'
       if (artistaLimpio) {
         const { data: artExiste } = await supabase.from("artistas").select("nombre").ilike("nombre", artistaLimpio).maybeSingle();
         if (!artExiste) {
@@ -88,7 +88,7 @@ export default function Admin() {
         }
       }
 
-      // 2. Guardar o verificar si el Género existe en la tabla 'generos'
+      // 2. Asegurar registro en la tabla 'generos'
       if (generoLimpio) {
         const { data: genExiste } = await supabase.from("generos").select("nombre").ilike("nombre", generoLimpio).maybeSingle();
         if (!genExiste) {
@@ -96,27 +96,36 @@ export default function Admin() {
         }
       }
 
-      // 3. Actualizar la canción
-      const { error } = await supabase
+      // 3. Actualizar la canción en la tabla 'canciones'
+      const { data, error } = await supabase
         .from("canciones")
         .update({
           titulo: editTitulo,
           artista: artistaLimpio,
           genero: generoLimpio,
         })
-        .eq("id", songToEdit.id);
+        .eq("id", songToEdit.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message);
+      }
 
-      alert("¡Canción actualizada correctamente!");
-      setSongToEdit(null); // Cerrar modal
-      fetchData(); // Recargar datos
+      if (!data || data.length === 0) {
+        alert("No se pudo actualizar la canción. Revisa si la política RLS de UPDATE está activa en Supabase.");
+        return;
+      }
+
+      alert("¡Canción actualizada correctamente! 🚀");
+      setSongToEdit(null); // Cerrar ventana de edición
+      fetchData(); // Recargar tablas
     } catch (err: any) {
       alert("Error al actualizar la canción: " + err.message);
+      console.error(err);
     }
   };
 
-  // Eliminar Usuario por RPC
+  // Eliminar Usuario mediante función RPC
   const handleDeleteUser = async (userRecord: any) => {
     const userId = userRecord.id || userRecord.user_id || userRecord.uid;
     const nombreUsuario = userRecord.apodo || userRecord.nombre || userRecord.email || "este usuario";
@@ -178,10 +187,10 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Tablas */}
+        {/* Tablas principales */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "2rem" }}>
           
-          {/* Usuarios */}
+          {/* Tabla de Usuarios */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", textAlign: "left" }}>
             <h2 style={{ fontSize: "1.25rem", fontWeight: "600", margin: 0 }}>Directorio de Usuarios</h2>
             <div style={{ backgroundColor: "#171717", borderRadius: "12px", border: "1px solid #262626", overflow: "hidden" }}>
@@ -214,7 +223,7 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* Canciones con Botón de Edición */}
+          {/* Tabla de Canciones */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", textAlign: "left" }}>
             <h2 style={{ fontSize: "1.25rem", fontWeight: "600", margin: 0 }}>Galería de Canciones</h2>
             <div style={{ backgroundColor: "#171717", borderRadius: "12px", border: "1px solid #262626", overflow: "hidden" }}>
@@ -262,6 +271,7 @@ export default function Admin() {
             <h3 style={{ marginTop: 0, color: "#F97316" }}>✏️ Editar Canción</h3>
             <form onSubmit={handleSaveEdit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               
+              {/* Título */}
               <div>
                 <label style={{ fontSize: "0.85rem", color: "#AAA" }}>Título:</label>
                 <input
@@ -269,46 +279,37 @@ export default function Admin() {
                   required
                   value={editTitulo}
                   onChange={(e) => setEditTitulo(e.target.value)}
-                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", boxSizing: "border-box" }}
                 />
               </div>
 
+              {/* Artista */}
               <div>
                 <label style={{ fontSize: "0.85rem", color: "#AAA" }}>Artista / Banda:</label>
                 <input
                   type="text"
-                  list="artistas-list"
                   required
                   value={editArtista}
                   onChange={(e) => setEditArtista(e.target.value)}
-                  placeholder="Selecciona o escribe un artista"
-                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+                  placeholder="Ej. Bad Bunny"
+                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", boxSizing: "border-box" }}
                 />
-                <datalist id="artistas-list">
-                  {artistas.map((a) => (
-                    <option key={a.id} value={a.nombre} />
-                  ))}
-                </datalist>
               </div>
 
+              {/* Género */}
               <div>
                 <label style={{ fontSize: "0.85rem", color: "#AAA" }}>Género Musical:</label>
                 <input
                   type="text"
-                  list="generos-list"
                   required
                   value={editGenero}
                   onChange={(e) => setEditGenero(e.target.value)}
-                  placeholder="Selecciona o escribe un género"
-                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+                  placeholder="Ej. Bachata / Pop / Rock"
+                  style={{ width: "100%", padding: "0.6rem", marginTop: "0.25rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", boxSizing: "border-box" }}
                 />
-                <datalist id="generos-list">
-                  {generos.map((g) => (
-                    <option key={g.id} value={g.nombre} />
-                  ))}
-                </datalist>
               </div>
 
+              {/* Botones */}
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1rem" }}>
                 <button
                   type="button"
