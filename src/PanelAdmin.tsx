@@ -7,6 +7,7 @@ export default function Admin() {
   const [stats, setStats] = useState({ totalUsers: 0, totalSongs: 0, totalPlaylists: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Cargar datos de la base de datos
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -33,6 +34,7 @@ export default function Admin() {
     fetchData();
   }, []);
 
+  // Función para eliminar canciones
   const handleDeleteSong = async (id: number) => {
     const confirmDelete = window.confirm("¿Seguro que deseas eliminar esta canción del sistema?");
     if (!confirmDelete) return;
@@ -46,36 +48,31 @@ export default function Admin() {
     }
   };
 
+  // Función para eliminar usuarios mediante la función RPC de Supabase
   const handleDeleteUser = async (userRecord: any) => {
     const userId = userRecord.id || userRecord.user_id || userRecord.uid;
+    const nombreUsuario = userRecord.apodo || userRecord.nombre || userRecord.email || "este usuario";
+
     const confirmDelete = window.confirm(
-      `¿Seguro que deseas eliminar al usuario "${userRecord.apodo || userRecord.nombre || userRecord.email}"?`
+      `¿Seguro que deseas eliminar al usuario "${nombreUsuario}"? Su perfil será borrado del registro.`
     );
     if (!confirmDelete) return;
 
-    // Intenta borrar por id
-    let { error, count } = await supabase
-      .from("perfiles")
-      .delete({ count: "exact" })
-      .eq("id", userId);
+    try {
+      // Se invoca la función RPC creada en Supabase con permisos de seguridad elevados
+      const { error } = await supabase.rpc("borrar_usuario_admin", {
+        usuario_id: userId,
+      });
 
-    // Si falló o no borró filas, intenta buscar por user_id
-    if (error || count === 0) {
-      const retry = await supabase
-        .from("perfiles")
-        .delete({ count: "exact" })
-        .eq("user_id", userId);
-      error = retry.error;
-      count = retry.count;
-    }
-
-    if (error) {
-      alert("Error de Supabase: " + error.message);
-    } else if (count === 0) {
-      alert("No se pudo eliminar el registro. Revisa el campo ID en la tabla 'perfiles'.");
-    } else {
-      alert("Usuario eliminado correctamente.");
-      fetchData();
+      if (error) {
+        alert("Error al eliminar el usuario: " + error.message);
+        console.error("Error RPC:", error);
+      } else {
+        alert("Usuario eliminado correctamente.");
+        fetchData(); // Actualiza las tablas en pantalla inmediatamente
+      }
+    } catch (err: any) {
+      alert("Ocurrió un error inesperado: " + err.message);
     }
   };
 
