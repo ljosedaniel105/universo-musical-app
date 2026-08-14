@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import { Shield, Music, Users, Library, Trash2 } from "lucide-react";
 
 export default function Admin() {
   const [users, setUsers] = useState<any[]>([]);
@@ -51,8 +50,8 @@ export default function Admin() {
       <div className="p-6 md:p-10 max-w-7xl mx-auto flex flex-col gap-8 w-full">
         {/* Encabezado */}
         <header className="flex items-center gap-4">
-          <div className="p-3 bg-red-500/10 rounded-xl text-red-500">
-            <Shield className="h-8 w-8" />
+          <div className="p-3 bg-red-500/10 rounded-xl text-red-500 text-2xl font-bold">
+            🛡️
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Panel de Control</h1>
@@ -65,7 +64,7 @@ export default function Admin() {
           <div className="bg-[#171717] border border-[#262626] rounded-xl p-5 flex flex-col gap-2">
             <div className="flex items-center justify-between text-zinc-400 text-sm font-medium">
               <span>Total Usuarios</span>
-              <Users className="h-4 w-4 text-zinc-500" />
+              <span>👥</span>
             </div>
             <div className="text-3xl font-bold text-white">{stats.totalUsers}</div>
           </div>
@@ -73,7 +72,7 @@ export default function Admin() {
           <div className="bg-[#171717] border border-[#262626] rounded-xl p-5 flex flex-col gap-2">
             <div className="flex items-center justify-between text-zinc-400 text-sm font-medium">
               <span>Total Canciones</span>
-              <Music className="h-4 w-4 text-zinc-500" />
+              <span>🎵</span>
             </div>
             <div className="text-3xl font-bold text-white">{stats.totalSongs}</div>
           </div>
@@ -81,7 +80,7 @@ export default function Admin() {
           <div className="bg-[#171717] border border-[#262626] rounded-xl p-5 flex flex-col gap-2">
             <div className="flex items-center justify-between text-zinc-400 text-sm font-medium">
               <span>Total Playlists</span>
-              <Library className="h-4 w-4 text-zinc-500" />
+              <span>📚</span>
             </div>
             <div className="text-3xl font-bold text-white">{stats.totalPlaylists}</div>
           </div>
@@ -150,7 +149,7 @@ export default function Admin() {
                             className="p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                             title="Eliminar canción"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            🗑️
                           </button>
                         </td>
                       </tr>
