@@ -1,5 +1,5 @@
+import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import { Layout } from "./components/Layout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, Music, Users, Library, Trash2 } from "lucide-react";
@@ -18,20 +18,16 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function Admin() {
-  const [users, setUsers] = useState([]);
-  const [songs, setSongs] = useState([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [songs, setSongs] = useState<any[]>([]);
   const [stats, setStats] = useState({ totalUsers: 0, totalSongs: 0, totalPlaylists: 0 });
   const [loading, setLoading] = useState(true);
 
-  // Cargar datos desde Supabase
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Obtener Usuarios (tabla perfiles)
       const { data: usersData } = await supabase.from("perfiles").select("*");
-      // 2. Obtener Canciones
       const { data: songsData } = await supabase.from("canciones").select("*");
-      // 3. Obtener Playlists
       const { data: playlistsData } = await supabase.from("playlists").select("*");
 
       if (usersData) setUsers(usersData);
@@ -53,11 +49,9 @@ export default function Admin() {
     fetchData();
   }, []);
 
-  // Función para eliminar canción en Supabase
-  const handleDeleteSong = async (id) => {
+  const handleDeleteSong = async (id: number) => {
     const { error } = await supabase.from("canciones").delete().eq("id", id);
     if (!error) {
-      // Recargar lista si se eliminó con éxito
       fetchData();
     } else {
       alert("Error al eliminar la canción");
@@ -65,8 +59,8 @@ export default function Admin() {
   };
 
   return (
-    <Layout>
-      <div className="p-6 md:p-10 max-w-7xl mx-auto flex flex-col gap-8">
+    <div className="flex min-h-screen bg-[#0A0A0A] text-white w-full">
+      <div className="p-6 md:p-10 max-w-7xl mx-auto flex flex-col gap-8 w-full">
         <header className="flex items-center gap-4">
           <div className="p-3 bg-red-500/10 rounded-xl text-red-500">
             <Shield className="h-8 w-8" />
@@ -209,6 +203,6 @@ export default function Admin() {
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
