@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 
-export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any) => void }) {
+// 💡 1. Actualizamos la definición de las props para que admita (song, songList)
+export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any, songList?: any[]) => void }) {
   const [songs, setSongs] = useState<any[]>([]);
   const [generos, setGeneros] = useState<any[]>([]);
   const [selectedGenero, setSelectedGenero] = useState<string>("Todos");
@@ -177,42 +178,4 @@ export default function ListaCanciones({ onPlaySong }: { onPlaySong?: (song: any
                   display: "inline-block",
                   marginTop: "0.4rem",
                   fontSize: "0.75rem",
-                  backgroundColor: "rgba(249, 115, 22, 0.15)",
-                  color: "#F97316",
-                  padding: "0.2rem 0.6rem",
-                  borderRadius: "12px",
-                  fontWeight: "500"
-                }}
-              >
-                {song.genero || "Sin Género"}
-              </span>
-
-              {/* Botón Escuchar */}
-              <button
-                onClick={() => onPlaySong && onPlaySong(song)}
-                style={{
-                  width: "100%",
-                  marginTop: "1rem",
-                  padding: "0.6rem",
-                  backgroundColor: "#F97316",
-                  color: "#FFF",
-                  border: "none",
-                  borderRadius: "20px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.5rem"
-                }}
-              >
-                ▶ Escuchar
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-    </div>
-  );
-}
+                  backgroundColor: "rgba(249, 115,
