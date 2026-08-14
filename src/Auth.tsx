@@ -1,146 +1,139 @@
-import React, { useState } from 'react';
-import { supabase } from './supabase';
+import { useState } from "react";
+import { supabase } from "./supabase";
 
-export function Auth({ onLogin }: { onLogin: () => void }) {
-  const [esRegistro, setEsRegistro] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [apodo, setApodo] = useState('');
-  const [cargando, setCargando] = useState(false);
+export default function Auth() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [apodo, setApodo] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // 1. INICIO DE SESIÓN
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCargando(true);
+    setLoading(true);
 
-    try {
-      if (esRegistro) {
-        if (!apodo.trim()) {
-          alert('Por favor ingresa un apodo.');
-          setCargando(false);
-          return;
-        }
+    // Intentar autenticar con Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-        // Registrar usuario guardando el apodo en user_metadata
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              apodo: apodo,
-            },
-          },
-        });
-
-        if (error) throw error;
-        alert('¡Registro exitoso! Ya puedes iniciar sesión.');
-        setEsRegistro(false);
-      } else {
-        // Iniciar sesión
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-        onLogin();
-      }
-    } catch (err: any) {
-      alert('Error: ' + err.message);
-    } finally {
-      setCargando(false);
+    if (authError) {
+      alert("Error al iniciar sesión: " + authError.message);
+      setLoading(false);
+      return;
     }
+
+    const userId = authData.user.id;
+
+    // Verificar si existe en la tabla 'perfiles'
+    const { data: profile } = await supabase
+      .from("perfiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+
+    // SI EL USUARIO FUE ELIMINADO DEL PANEL:
+    if (!profile) {
+      // Forzar cierre de sesión en auth
+      await supabase.auth.signOut();
+      alert("Tu cuenta fue eliminada del sistema. Por favor, regístrate de nuevo para continuar.");
+      setIsRegistering(true); // Cambiar automáticamente a la pestaña de registro
+      setLoading(false);
+      return;
+    }
+
+    alert("¡Bienvenido de nuevo!");
+    window.location.reload(); // Recargar o redirigir a la app
+  };
+
+  // 2. REGISTRO (O RE-REGISTRO)
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Intentar crear la cuenta o autenticar
+    let { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    // Si el correo ya existía en Auth (porque sólo lo borraste de la tabla), intentamos login directo para re-crear su perfil
+    if (authError && authError.message.includes("already registered")) {
+      const loginRes = await supabase.auth.signInWithPassword({ email, password });
+      authData = loginRes.data;
+      authError = loginRes.error;
+    }
+
+    if (authError || !authData.user) {
+      alert("Error en el registro: " + (authError?.message || "No se pudo crear la cuenta"));
+      setLoading(false);
+      return;
+    }
+
+    // Insertar el nuevo perfil en la tabla 'perfiles'
+    const { error: profileError } = await supabase.from("perfiles").insert([
+      {
+        id: authData.user.id,
+        email: email,
+        apodo: apodo || email.split("@")[0],
+      },
+    ]);
+
+    if (profileError) {
+      alert("Error al guardar el perfil: " + profileError.message);
+    } else {
+      alert("¡Registro completado con éxito!");
+      window.location.reload();
+    }
+    setLoading(false);
   };
 
   return (
-    <div style={{
-      maxWidth: '400px',
-      margin: '40px auto',
-      padding: '30px',
-      background: '#181818',
-      borderRadius: '16px',
-      border: '1px solid #333',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-      color: '#fff'
-    }}>
-      <h2 style={{ textAlign: 'center', color: '#ff6600', marginTop: 0 }}>
-        {esRegistro ? '📝 Crear Cuenta' : '🔑 Iniciar Sesión'}
-      </h2>
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        {esRegistro && (
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: '#aaa', marginBottom: '5px' }}>
-              🏷️ Apodo / Nombre de Usuario:
-            </label>
-            <input
-              type="text"
-              placeholder="Ej. ElMelodico99"
-              value={apodo}
-              onChange={(e) => setApodo(e.target.value)}
-              required
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #444', background: '#0d0d0d', color: '#fff', boxSizing: 'border-box' }}
-            />
-          </div>
+    <div style={{ maxWidth: "400px", margin: "4rem auto", padding: "2rem", backgroundColor: "#171717", borderRadius: "12px", color: "#FFF" }}>
+      <h2>{isRegistering ? "Crear Cuenta" : "Iniciar Sesión"}</h2>
+      
+      <form onSubmit={isRegistering ? handleRegister : handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {isRegistering && (
+          <input
+            type="text"
+            placeholder="Apodo / Nombre"
+            value={apodo}
+            onChange={(e) => setApodo(e.target.value)}
+            style={{ padding: "0.75rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+            required
+          />
         )}
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.85rem', color: '#aaa', marginBottom: '5px' }}>
-            📧 Correo Electrónico:
-          </label>
-          <input
-            type="email"
-            placeholder="correo@ejemplo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #444', background: '#0d0d0d', color: '#fff', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: 'block', fontSize: '0.85rem', color: '#aaa', marginBottom: '5px' }}>
-            🔒 Contraseña:
-          </label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #444', background: '#0d0d0d', color: '#fff', boxSizing: 'border-box' }}
-          />
-        </div>
+        <input
+          type="email"
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ padding: "0.75rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: "0.75rem", borderRadius: "6px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF" }}
+          required
+        />
 
         <button
           type="submit"
-          disabled={cargando}
-          style={{
-            background: '#ff6600',
-            color: '#fff',
-            border: 'none',
-            padding: '12px',
-            borderRadius: '8px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            marginTop: '10px',
-            fontSize: '1rem'
-          }}
+          disabled={loading}
+          style={{ padding: "0.75rem", borderRadius: "6px", border: "none", backgroundColor: "#E11D48", color: "#FFF", fontWeight: "bold", cursor: "pointer" }}
         >
-          {cargando ? 'Cargando...' : esRegistro ? 'Registrarse 🚀' : 'Entrar 🔓'}
+          {loading ? "Cargando..." : isRegistering ? "Registrarse" : "Entrar"}
         </button>
       </form>
 
-      <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem' }}>
-        <span style={{ color: '#aaa' }}>
-          {esRegistro ? '¿Ya tienes una cuenta?' : '¿No tienes cuenta aún?'}
-        </span>{' '}
-        <button
-          onClick={() => setEsRegistro(!esRegistro)}
-          style={{ background: 'none', border: 'none', color: '#ff6600', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }}
-        >
-          {esRegistro ? 'Inicia Sesión' : 'Regístrate aquí'}
-        </button>
-      </div>
+      <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#A1A1AA", cursor: "pointer" }} onClick={() => setIsRegistering(!isRegistering)}>
+        {isRegistering ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate aquí"}
+      </p>
     </div>
   );
 }
