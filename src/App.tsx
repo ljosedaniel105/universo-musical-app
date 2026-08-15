@@ -6,8 +6,6 @@ import SubirCancion from './SubirCancion';
 import PanelAdmin from './PanelAdmin';
 
 const LOGO_URL = "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
-
-// Correo fijado para el Administrador
 const ADMIN_EMAIL = "ljosedaniel105@gmail.com"; 
 
 // Iconos
@@ -27,7 +25,6 @@ const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 );
 
-// Iconos SVG estilo YouTube Music
 const IconLike = ({ filled }: { filled: boolean }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
@@ -243,11 +240,11 @@ const ReproductorPersonalizado = ({
         alignItems: 'center',
         padding: '8px 24px',
         gap: '16px',
-        justify: 'space-between',
+        justifyContent: 'space-between',
         height: '56px',
         boxSizing: 'border-box'
       }}>
-        {/* Controles de Reproducción y Tiempo */}
+        {/* Controles de Reproducción */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button onClick={onPrev} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Anterior">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
@@ -268,7 +265,7 @@ const ReproductorPersonalizado = ({
           </span>
         </div>
 
-        {/* Info de la Canción (Portada + Título + Artista) */}
+        {/* Info de la Canción */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center', maxWidth: '400px' }}>
           <img 
             src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} 
@@ -285,7 +282,7 @@ const ReproductorPersonalizado = ({
           </div>
         </div>
 
-        {/* Reacciones Me Gusta / No Me Gusta y Menú */}
+        {/* Reacciones y Menú */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
           <button
             onClick={handleToggleLike}
@@ -322,7 +319,7 @@ const ReproductorPersonalizado = ({
               alignItems: 'center',
               transition: 'color 0.2s ease'
             }}
-            title="No me gusta (Ocultar canción)"
+            title="No me gusta"
           >
             <IconDislike filled={noMeGusta} />
           </button>
@@ -484,132 +481,88 @@ export default function App() {
             <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
             <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{isLogin ? 'Entrar' : 'Registrarse'}</button>
           </form>
-          <p style={{ textAlign: 'center', color: '#aaa', cursor: 'pointer' }} onClick={() => setIsLogin(!isLogin)}>{isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'}</p>
+          <p style={{ textAlign: 'center', color: '#aaa', cursor: 'pointer', marginTop: '15px' }} onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión'}
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', color: 'white', fontFamily: 'sans-serif', overflowX: 'hidden' }}>
-      {/* Sidebar Navigation */}
-      <div style={{ width: '250px', backgroundColor: '#08080a', borderRight: '1px solid #141418', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '24px 18px', boxSizing: 'border-box', height: '100vh', position: 'fixed', left: 0, top: 0, zIndex: 10 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
-            <img src={LOGO_URL} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
-            <h1 style={{ fontSize: '15px', fontWeight: '800', color: '#ffffff', letterSpacing: '0.5px', margin: 0, whiteSpace: 'nowrap' }}>UNIVERSO MUSICAL</h1>
-          </div>
-
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <button onClick={() => setSeccion('descubrir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'descubrir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'descubrir' ? '#1c0c03' : 'transparent', color: seccion === 'descubrir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconHome /> Descubrir</button>
-            <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'playlists' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent', color: seccion === 'playlists' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconPlaylists /> Mis Playlists</button>
-            <button onClick={() => setSeccion('subir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'subir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'subir' ? '#1c0c03' : 'transparent', color: seccion === 'subir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconUpload /> Subir Música</button>
-            
-            {esAdmin && (
-              <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent', color: seccion === 'admin' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconAdmin /> Admin Panel</button>
-            )}
-          </nav>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif' }}>
+      {/* Sidebar */}
+      <div style={{ width: '250px', backgroundColor: '#121215', borderRight: '1px solid #222228', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', position: 'fixed', top: 0, bottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src={LOGO_URL} alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '50%' }} />
+          <h3 style={{ margin: 0, color: '#ff6b00' }}>Universo Musical</h3>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ borderTop: '1px solid #141418', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>👤</div>
-            <div style={{ overflow: 'hidden', flex: 1 }}>
-              <h4 style={{ margin: 0, fontSize: '13px' }}>{perfil?.apodo || session.user.email.split('@')[0]}</h4>
-              <p style={{ margin: 0, fontSize: '11px', color: '#555861' }}>{session.user.email}</p>
-            </div>
-          </div>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button onClick={() => setSeccion('descubrir')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'descubrir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <IconHome /> Descubrir
+          </button>
+          <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'playlists' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <IconPlaylists /> Playlists
+          </button>
+          <button onClick={() => setSeccion('subir')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'subir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <IconUpload /> Subir Canción
+          </button>
 
-          <button 
-            onClick={cerrarSesion}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: '8px', 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '10px', 
-              border: '1px solid #ff444433', 
-              backgroundColor: '#1f0d0d', 
-              color: '#ff4444', 
-              cursor: 'pointer',
-              fontWeight: '600',
-              fontSize: '13px'
-            }}
-          >
+          {esAdmin && (
+            <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'admin' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+              <IconAdmin /> Panel Admin
+            </button>
+          )}
+        </nav>
+
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ color: '#aaa', fontSize: '14px' }}>
+            👤 {perfil?.apodo || session.user.email}
+          </div>
+          <button onClick={cerrarSesion} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222228', border: 'none', color: '#ff4444', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
             <IconLogout /> Cerrar Sesión
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div style={{ marginLeft: '250px', width: 'calc(100vw - 250px)', maxWidth: 'calc(100vw - 250px)', padding: '30px', paddingBottom: cancionActual ? '120px' : '30px', boxSizing: 'border-box', overflowX: 'hidden' }}>
-        {seccion === 'descubrir' && (
-          <ListaCanciones 
-            userId={session?.user?.id}
-            onPlaySong={(c: any, lista?: any[]) => handlePlaySong(c, lista)} 
-          />
-        )}
-
-        {seccion === 'playlists' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Mis Playlists</h2>
-              <button 
-                onClick={() => setMostrarModalPlaylist(true)} 
-                style={{ backgroundColor: '#ff6b00', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                ➕ Crear Playlist
-              </button>
-            </div>
-
-            {playlists.length === 0 ? (
-              <p style={{ color: '#888' }}>No tienes playlists creadas aún. ¡Haz clic arriba para crear tu primera lista!</p>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
-                {playlists.map((pl) => (
-                  <div key={pl.id} style={{ backgroundColor: '#18181c', borderRadius: '12px', padding: '16px', border: '1px solid #2a2a30' }}>
-                    <div style={{ width: '100%', height: '140px', backgroundColor: '#26262c', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', marginBottom: '12px' }}>
-                      🎵
-                    </div>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>{pl.nombre}</h4>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Playlist personal</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
+      <div style={{ marginLeft: '250px', flex: 1, padding: '30px', paddingBottom: cancionActual ? '90px' : '30px' }}>
+        {seccion === 'descubrir' && <ListaCanciones onPlay={handlePlaySong} userId={session?.user?.id} />}
         {seccion === 'subir' && <SubirCancion />}
         {seccion === 'admin' && esAdmin && <PanelAdmin />}
+        {seccion === 'playlists' && (
+          <div>
+            <h2>Mis Playlists</h2>
+            <button onClick={() => setMostrarModalPlaylist(true)} style={{ backgroundColor: '#ff6b00', border: 'none', color: 'white', padding: '10px 15px', borderRadius: '8px', cursor: 'pointer', marginBottom: '20px' }}>
+              + Crear Playlist
+            </button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
+              {playlists.map((p) => (
+                <div key={p.id} style={{ backgroundColor: '#18181c', padding: '15px', borderRadius: '8px', border: '1px solid #2a2a30' }}>
+                  <h4>{p.nombre}</h4>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Modal para Crear Playlist */}
+      {/* Modal Crear Playlist */}
       {mostrarModalPlaylist && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-          <div style={{ backgroundColor: '#18181c', padding: '30px', borderRadius: '16px', border: '1px solid #2a2a30', width: '90%', maxWidth: '400px' }}>
-            <h3 style={{ marginTop: 0, color: '#ff6b00' }}>Nueva Playlist</h3>
-            <form onSubmit={crearNuevaPlaylist} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <input 
-                type="text" 
-                placeholder="Nombre de la playlist..." 
-                value={nombreNuevaPlaylist} 
-                onChange={(e) => setNombreNuevaPlaylist(e.target.value)} 
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white', boxSizing: 'border-box' }}
-                autoFocus
-              />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setMostrarModalPlaylist(false)} style={{ backgroundColor: 'transparent', border: 'none', color: '#aaa', padding: '10px', cursor: 'pointer' }}>Cancelar</button>
-                <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Crear</button>
-              </div>
-            </form>
-          </div>
+          <form onSubmit={crearNuevaPlaylist} style={{ backgroundColor: '#18181c', padding: '25px', borderRadius: '12px', width: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <h3>Crear nueva playlist</h3>
+            <input type="text" placeholder="Nombre..." value={nombreNuevaPlaylist} onChange={(e) => setNombreNuevaPlaylist(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => setMostrarModalPlaylist(false)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>Cancelar</button>
+              <button type="submit" style={{ backgroundColor: '#ff6b00', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>Crear</button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Player Personalizado Estilo YouTube Music */}
+      {/* Reproductor Fijo en Parte Inferior */}
       {cancionActual && (
         <ReproductorPersonalizado 
           cancion={cancionActual} 
