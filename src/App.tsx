@@ -27,7 +27,7 @@ const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 );
 
-// Reproductor Personalizado con Siguiente, Anterior y FAVORITOS ❤️
+// Reproductor Personalizado con Me Gusta 👍 / No Me Gusta 👎
 const ReproductorPersonalizado = ({ 
   cancion, 
   userId,
@@ -45,7 +45,8 @@ const ReproductorPersonalizado = ({
   const [duration, setDuration] = useState(0);
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [velocidad, setVelocidad] = useState(1);
-  const [esFavorito, setEsFavorito] = useState(false);
+  const [meGusta, setMeGusta] = useState(false);
+  const [totalLikes, setTotalLikes] = useState(0);
 
   const audioUrl = cancion?.url_audio || cancion?.url_archivo || cancion?.url_cancion || cancion?.url;
   const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
@@ -58,40 +59,85 @@ const ReproductorPersonalizado = ({
     }
   }, [cancion, velocidad]);
 
-  // Verificar si la canción actual está en los favoritos del usuario
+  // Consultar la reacción del usuario y el total de "Me Gusta"
   useEffect(() => {
-    const verificarFavorito = async () => {
-      if (!userId || !cancion?.id) return;
-      const { data } = await supabase
-        .from('favoritos')
-        .select('id')
-        .eq('usuario_id', userId)
-        .eq('cancion_id', cancion.id)
-        .maybeSingle();
+    const cargarReacciones = async () => {
+      if (!cancion?.id) return;
 
-      setEsFavorito(!!data);
+      // 1. Obtener conteo total de "Me Gusta" de esta canción
+      const { count } = await supabase
+        .from('me_gusta')
+        .select('*', { count: 'exact', head: true })
+        .eq('cancion_id', cancion.id);
+      
+      setTotalLikes(count || 0);
+
+      // 2. Comprobar si el usuario actual le dio "Me Gusta"
+      if (userId) {
+        const { data } = await supabase
+          .from('me_gusta')
+          .select('id')
+          .eq('usuario_id', userId)
+          .eq('cancion_id', cancion.id)
+          .maybeSingle();
+
+        setMeGusta(!!data);
+      }
     };
 
-    verificarFavorito();
+    cargarReacciones();
   }, [cancion, userId]);
 
-  // Alternar el estado de favorito en Supabase
-  const toggleFavorito = async () => {
+  // Manejar el botón Me Gusta 👍
+  const handleToggleLike = async () => {
     if (!userId || !cancion?.id) return;
 
-    if (esFavorito) {
-      setEsFavorito(false);
+    if (meGusta) {
+      setMeGusta(false);
+      setTotalLikes((prev) => Math.max(0, prev - 1));
       await supabase
-        .from('favoritos')
+        .from('me_gusta')
         .delete()
         .eq('usuario_id', userId)
         .eq('cancion_id', cancion.id);
     } else {
-      setEsFavorito(true);
+      setMeGusta(true);
+      setTotalLikes((prev) => prev + 1);
       await supabase
-        .from('favoritos')
+        .from('me_gusta')
         .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
+
+      // Eliminar de No Me Gusta si existía allí
+      await supabase
+        .from('no_me_gusta')
+        .delete()
+        .eq('usuario_id', userId)
+        .eq('cancion_id', cancion.id);
     }
+  };
+
+  // Manejar el botón No Me Gusta 👎 (Oculta la canción e pasa a la siguiente)
+  const handleDislike = async () => {
+    if (!userId || !cancion?.id) return;
+
+    // Quitar "Me gusta" si lo tenía
+    if (meGusta) {
+      setMeGusta(false);
+      setTotalLikes((prev) => Math.max(0, prev - 1));
+      await supabase
+        .from('me_gusta')
+        .delete()
+        .eq('usuario_id', userId)
+        .eq('cancion_id', cancion.id);
+    }
+
+    // Registrar en No Me Gusta
+    await supabase
+      .from('no_me_gusta')
+      .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
+
+    // Cambiar a la siguiente canción automáticamente
+    onNext();
   };
 
   const togglePlay = () => {
@@ -137,10 +183,10 @@ const ReproductorPersonalizado = ({
         onEnded={onNext}
       />
 
-      {/* Info Canción + Botón de Favoritos ❤️ */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', minWidth: '240px' }}>
+      {/* Info Canción + Botones 👍 / 👎 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '260px' }}>
         <img src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} alt={cancion.titulo} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
-        <div style={{ overflow: 'hidden', maxWidth: '140px' }}>
+        <div style={{ overflow: 'hidden', maxWidth: '120px' }}>
           <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {cancion.titulo || cancion.title || "Sin título"}
           </h4>
@@ -149,31 +195,49 @@ const ReproductorPersonalizado = ({
           </p>
         </div>
 
-        {/* Botón de Favoritos en la barra */}
-        <button
-          onClick={toggleFavorito}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '18px',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'transform 0.1s ease'
-          }}
-          title={esFavorito ? "Quitar de favoritos" : "Añadir a favoritos"}
-        >
-          {esFavorito ? "❤️" : "🤍"}
-        </button>
+        {/* Botones Me Gusta y No Me Gusta */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            onClick={handleToggleLike}
+            style={{
+              background: meGusta ? 'rgba(74, 222, 128, 0.2)' : 'transparent',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '4px 8px',
+              color: meGusta ? '#4ade80' : '#8f929d',
+              cursor: 'pointer',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontWeight: 'bold'
+            }}
+            title="Me gusta"
+          >
+            👍 <span>{totalLikes}</span>
+          </button>
+
+          <button
+            onClick={handleDislike}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8f929d',
+              cursor: 'pointer',
+              fontSize: '14px',
+              padding: '4px'
+            }}
+            title="No me gusta (Ocultar canción)"
+          >
+            👎
+          </button>
+        </div>
       </div>
 
       {/* Controles Centrales (Anterior, Play/Pausa, Siguiente + Barra de Progreso) */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, maxWidth: '500px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           
-          {/* ⏮️ Botón Anterior */}
           <button 
             onClick={onPrev} 
             style={{ background: 'none', border: 'none', color: '#8f929d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -184,7 +248,6 @@ const ReproductorPersonalizado = ({
             </svg>
           </button>
 
-          {/* ▶️ / ⏸️ Botón Play / Pausa */}
           <button onClick={togglePlay} style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#ff6b00', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {isPlaying ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
@@ -193,7 +256,6 @@ const ReproductorPersonalizado = ({
             )}
           </button>
 
-          {/* ⏭️ Botón Siguiente */}
           <button 
             onClick={onNext} 
             style={{ background: 'none', border: 'none', color: '#8f929d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -249,16 +311,13 @@ export default function App() {
   const [perfil, setPerfil] = useState<any>(null);
   const [seccion, setSeccion] = useState<'descubrir' | 'playlists' | 'subir' | 'admin'>('descubrir');
   
-  // Estado para la canción actual y la cola de reproducción
   const [cancionActual, setCancionActual] = useState<any>(null);
   const [listaCanciones, setListaCanciones] = useState<any[]>([]);
 
-  // Estados para Playlists
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [mostrarModalPlaylist, setMostrarModalPlaylist] = useState(false);
   const [nombreNuevaPlaylist, setNombreNuevaPlaylist] = useState('');
 
-  // Login / Auth
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -333,7 +392,6 @@ export default function App() {
     }
   };
 
-  // Función para reproducir una canción e instruir la cola actual
   const handlePlaySong = (cancion: any, listaCompleta?: any[]) => {
     setCancionActual(cancion);
     if (listaCompleta && listaCompleta.length > 0) {
@@ -341,25 +399,23 @@ export default function App() {
     }
   };
 
-  // Función para avanzar a la siguiente canción
   const handleNextSong = () => {
     if (!cancionActual || listaCanciones.length === 0) return;
     const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
     if (indexActual !== -1 && indexActual < listaCanciones.length - 1) {
       setCancionActual(listaCanciones[indexActual + 1]);
     } else {
-      setCancionActual(listaCanciones[0]); // Vuelve al inicio si está en la última
+      setCancionActual(listaCanciones[0]);
     }
   };
 
-  // Función para regresar a la canción anterior
   const handlePrevSong = () => {
     if (!cancionActual || listaCanciones.length === 0) return;
     const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
     if (indexActual > 0) {
       setCancionActual(listaCanciones[indexActual - 1]);
     } else {
-      setCancionActual(listaCanciones[listaCanciones.length - 1]); // Va a la última si está en la primera
+      setCancionActual(listaCanciones[listaCanciones.length - 1]);
     }
   };
 
@@ -398,14 +454,12 @@ export default function App() {
             <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'playlists' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'playlists' ? '#1c0c03' : 'transparent', color: seccion === 'playlists' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconPlaylists /> Mis Playlists</button>
             <button onClick={() => setSeccion('subir')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'subir' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'subir' ? '#1c0c03' : 'transparent', color: seccion === 'subir' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconUpload /> Subir Música</button>
             
-            {/* Solo se mostrará si entras con el correo administrador */}
             {esAdmin && (
               <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '12px 16px', borderRadius: '12px', border: seccion === 'admin' ? '1px solid #d95300' : '1px solid transparent', backgroundColor: seccion === 'admin' ? '#1c0c03' : 'transparent', color: seccion === 'admin' ? '#ff5500' : '#8f929d', cursor: 'pointer' }}><IconAdmin /> Admin Panel</button>
             )}
           </nav>
         </div>
 
-        {/* Sección de Usuario y Cerrar Sesión */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ borderTop: '1px solid #141418', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>👤</div>
@@ -442,6 +496,7 @@ export default function App() {
       <div style={{ marginLeft: '250px', width: 'calc(100vw - 250px)', maxWidth: 'calc(100vw - 250px)', padding: '30px', paddingBottom: cancionActual ? '120px' : '30px', boxSizing: 'border-box', overflowX: 'hidden' }}>
         {seccion === 'descubrir' && (
           <ListaCanciones 
+            userId={session?.user?.id}
             onPlaySong={(c: any, lista?: any[]) => handlePlaySong(c, lista)} 
           />
         )}
