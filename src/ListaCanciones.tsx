@@ -14,33 +14,41 @@ interface ListaCancionesProps {
 }
 
 export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) {
+  if (canciones.length === 0) {
+    return (
+      <div style={{ padding: '20px', backgroundColor: '#18181f', borderRadius: '12px', color: '#aaa', textAlign: 'center' }}>
+        No hay canciones registradas en la base de datos. ¡Haz clic en "Subir Canción" para agregar la primera!
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: '100%', boxSizing: 'border-box' }}>
-      {/* Muestra las canciones en cuadrícula hacia abajo */}
+      {/* GRILLA RESPONSIVA: LAS TARJETAS BAJAN VERTICALMENTE EN FILAS */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
           gap: '20px',
           width: '100%',
           boxSizing: 'border-box'
         }}
       >
         {canciones.map((cancion, index) => {
-          const imagen = cancion.portada_url || cancion.portadaUrl || 'https://via.placeholder.com/200';
-          const titulo = cancion.titulo || 'Sin título';
-          const artista = cancion.artista || 'Artista desconocido';
+          const imagen = cancion.portada_url || cancion.portadaUrl || 'https://via.placeholder.com/200?text=Sin+Imagen';
+          const titulo = cancion.titulo || 'Título no disponible';
+          const artista = cancion.artista || 'Artista no disponible';
 
           return (
             <div
               key={cancion.id || index}
               style={{
-                backgroundColor: '#18181c',
+                backgroundColor: '#18181f',
                 borderRadius: '12px',
-                padding: '15px',
+                padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
-                border: '1px solid #23232a',
+                border: '1px solid #282832',
                 boxSizing: 'border-box'
               }}
             >
@@ -52,15 +60,16 @@ export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) 
                   height: '180px',
                   objectFit: 'cover',
                   borderRadius: '8px',
-                  marginBottom: '12px'
+                  marginBottom: '12px',
+                  backgroundColor: '#0d0d11'
                 }}
               />
 
-              <h3 style={{ color: '#fff', fontSize: '16px', margin: '0 0 6px 0', textAlign: 'center' }}>
+              <h3 style={{ color: '#fff', fontSize: '16px', margin: '0 0 6px 0', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {titulo}
               </h3>
 
-              <p style={{ color: '#aaa', fontSize: '13px', margin: '0 0 10px 0', textAlign: 'center' }}>
+              <p style={{ color: '#aaa', fontSize: '13px', margin: '0 0 12px 0', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {artista}
               </p>
 
@@ -68,12 +77,13 @@ export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) 
                 <span
                   style={{
                     alignSelf: 'center',
-                    backgroundColor: '#25252e',
+                    backgroundColor: '#282835',
                     color: '#ff6600',
-                    padding: '4px 10px',
+                    padding: '4px 12px',
                     borderRadius: '12px',
                     fontSize: '11px',
-                    marginBottom: '12px'
+                    fontWeight: 'bold',
+                    marginBottom: '14px'
                   }}
                 >
                   {cancion.genero}
