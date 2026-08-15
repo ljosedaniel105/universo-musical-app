@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { supabase } from './supabase';
 
-export default function SubirCancion() {
+interface SubirCancionProps {
+  alSubirExitoso?: () => void;
+}
+
+export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
   const [titulo, setTitulo] = useState('');
   const [artista, setArtista] = useState('');
   const [genero, setGenero] = useState('');
@@ -21,9 +25,9 @@ export default function SubirCancion() {
     try {
       const { error } = await supabase.from('canciones').insert([
         {
-          titulo,
-          artista,
-          genero,
+          titulo: titulo,
+          artista: artista,
+          genero: genero,
           portada_url: portadaUrl
         }
       ]);
@@ -32,22 +36,26 @@ export default function SubirCancion() {
 
       alert("¡Canción subida con éxito!");
 
-      // --- AQUÍ REINICIAMOS EL FORMULARIO A CERO ---
+      // REINICIA EL FORMULARIO A CERO TRAS SUBIR
       setTitulo('');
       setArtista('');
       setGenero('');
       setPortadaUrl('');
 
+      if (alSubirExitoso) {
+        alSubirExitoso();
+      }
+
     } catch (err: any) {
       console.error('Error al subir canción:', err);
-      alert('Error al subir la canción: ' + err.message);
+      alert('Error al subir la canción: ' + (err.message || err));
     } finally {
       setSubiendo(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', color: '#fff' }}>
+    <div style={{ maxWidth: '500px', margin: '0 auto', color: '#fff' }}>
       <h2 style={{ color: '#ff6600', textAlign: 'center', marginBottom: '20px' }}>Subir Canción</h2>
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
