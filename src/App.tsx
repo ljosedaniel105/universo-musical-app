@@ -27,13 +27,15 @@ const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 );
 
-// Reproductor Personalizado con Siguiente y Anterior
+// Reproductor Personalizado con Siguiente, Anterior y FAVORITOS ❤️
 const ReproductorPersonalizado = ({ 
   cancion, 
+  userId,
   onNext, 
   onPrev 
 }: { 
   cancion: any; 
+  userId?: string;
   onNext: () => void; 
   onPrev: () => void; 
 }) => {
@@ -43,6 +45,7 @@ const ReproductorPersonalizado = ({
   const [duration, setDuration] = useState(0);
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [velocidad, setVelocidad] = useState(1);
+  const [esFavorito, setEsFavorito] = useState(false);
 
   const audioUrl = cancion?.url_audio || cancion?.url_archivo || cancion?.url_cancion || cancion?.url;
   const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
@@ -54,6 +57,42 @@ const ReproductorPersonalizado = ({
       audioRef.current.playbackRate = velocidad;
     }
   }, [cancion, velocidad]);
+
+  // Verificar si la canción actual está en los favoritos del usuario
+  useEffect(() => {
+    const verificarFavorito = async () => {
+      if (!userId || !cancion?.id) return;
+      const { data } = await supabase
+        .from('favoritos')
+        .select('id')
+        .eq('usuario_id', userId)
+        .eq('cancion_id', cancion.id)
+        .maybeSingle();
+
+      setEsFavorito(!!data);
+    };
+
+    verificarFavorito();
+  }, [cancion, userId]);
+
+  // Alternar el estado de favorito en Supabase
+  const toggleFavorito = async () => {
+    if (!userId || !cancion?.id) return;
+
+    if (esFavorito) {
+      setEsFavorito(false);
+      await supabase
+        .from('favoritos')
+        .delete()
+        .eq('usuario_id', userId)
+        .eq('cancion_id', cancion.id);
+    } else {
+      setEsFavorito(true);
+      await supabase
+        .from('favoritos')
+        .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
+    }
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -95,16 +134,39 @@ const ReproductorPersonalizado = ({
         src={audioUrl} 
         onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)} 
         onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)} 
-        onEnded={onNext} // Cambia automáticamente a la siguiente canción al terminar
+        onEnded={onNext}
       />
 
-      {/* Info Canción */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', minWidth: '220px' }}>
+      {/* Info Canción + Botón de Favoritos ❤️ */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', minWidth: '240px' }}>
         <img src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} alt={cancion.titulo} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
-        <div>
-          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px' }}>{cancion.titulo || cancion.title || "Sin título"}</h4>
-          <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px' }}>{cancion.artista || cancion.artist || "Artista desconocido"}</p>
+        <div style={{ overflow: 'hidden', maxWidth: '140px' }}>
+          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {cancion.titulo || cancion.title || "Sin título"}
+          </h4>
+          <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {cancion.artista || cancion.artist || "Artista desconocido"}
+          </p>
         </div>
+
+        {/* Botón de Favoritos en la barra */}
+        <button
+          onClick={toggleFavorito}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '18px',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.1s ease'
+          }}
+          title={esFavorito ? "Quitar de favoritos" : "Añadir a favoritos"}
+        >
+          {esFavorito ? "❤️" : "🤍"}
+        </button>
       </div>
 
       {/* Controles Centrales (Anterior, Play/Pausa, Siguiente + Barra de Progreso) */}
@@ -445,6 +507,7 @@ export default function App() {
       {cancionActual && (
         <ReproductorPersonalizado 
           cancion={cancionActual} 
+          userId={session?.user?.id}
           onNext={handleNextSong} 
           onPrev={handlePrevSong} 
         />
