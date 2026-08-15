@@ -27,7 +27,6 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
       let portadaUrl = '';
       let audioUrl = '';
 
-      // Subir imagen a Supabase Storage si seleccionaste un archivo
       if (archivoPortada) {
         const nombrePortada = `${Date.now()}_${archivoPortada.name}`;
         const { error: errorPortada } = await supabase.storage
@@ -42,7 +41,6 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
         }
       }
 
-      // Subir archivo de audio si seleccionaste uno
       if (archivoAudio) {
         const nombreAudio = `${Date.now()}_${archivoAudio.name}`;
         const { error: errorAudio } = await supabase.storage
@@ -69,9 +67,8 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
 
       if (error) throw error;
 
-      alert("¡Canción subida con éxito!");
+      alert("¡Canción subida correctamente!");
 
-      // Limpiar el formulario por completo
       setTitulo('');
       setArtista('');
       setGenero('');
@@ -90,12 +87,12 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
   };
 
   return (
-    <div style={{ maxWidth: '520px', margin: '0 auto', color: '#fff', backgroundColor: '#141419', padding: '25px', borderRadius: '12px', border: '1px solid #22222a' }}>
-      <h2 style={{ color: '#ff6600', textAlign: 'center', marginTop: 0, marginBottom: '20px' }}>Subir Nueva Canción</h2>
+    <div style={{ maxWidth: '500px', margin: '0 auto', color: '#fff', backgroundColor: '#161720', padding: '28px', borderRadius: '16px', border: '1px solid #222432' }}>
+      <h2 style={{ color: '#ff5500', textAlign: 'center', marginTop: 0, marginBottom: '24px' }}>Subir Canción</h2>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
         <div>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Título (*):</label>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Título:</label>
           <input
             type="text"
             value={titulo}
@@ -106,8 +103,8 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               width: '100%',
               padding: '12px',
               borderRadius: '8px',
-              border: '1px solid #33333f',
-              backgroundColor: '#0d0d11',
+              border: '1px solid #2a2c3d',
+              backgroundColor: '#0d0e14',
               color: '#fff',
               boxSizing: 'border-box'
             }}
@@ -115,7 +112,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Artista (*):</label>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Artista:</label>
           <input
             type="text"
             value={artista}
@@ -126,8 +123,8 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               width: '100%',
               padding: '12px',
               borderRadius: '8px',
-              border: '1px solid #33333f',
-              backgroundColor: '#0d0d11',
+              border: '1px solid #2a2c3d',
+              backgroundColor: '#0d0e14',
               color: '#fff',
               boxSizing: 'border-box'
             }}
@@ -140,13 +137,13 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
             type="text"
             value={genero}
             onChange={(e) => setGenero(e.target.value)}
-            placeholder="Ej. Bachata, Pop, Salsa..."
+            placeholder="Ej. Música Grupera, Bachata..."
             style={{
               width: '100%',
               padding: '12px',
               borderRadius: '8px',
-              border: '1px solid #33333f',
-              backgroundColor: '#0d0d11',
+              border: '1px solid #2a2c3d',
+              backgroundColor: '#0d0e14',
               color: '#fff',
               boxSizing: 'border-box'
             }}
@@ -154,7 +151,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Imagen de Portada (Archivo):</label>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Seleccionar Portada (Imagen):</label>
           <input
             type="file"
             accept="image/*"
@@ -163,8 +160,8 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               width: '100%',
               padding: '10px',
               borderRadius: '8px',
-              border: '1px solid #33333f',
-              backgroundColor: '#0d0d11',
+              border: '1px solid #2a2c3d',
+              backgroundColor: '#0d0e14',
               color: '#fff',
               boxSizing: 'border-box'
             }}
@@ -172,7 +169,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Archivo de Audio (MP3/WAV):</label>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Seleccionar Audio (MP3/WAV):</label>
           <input
             type="file"
             accept="audio/*"
@@ -181,8 +178,8 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               width: '100%',
               padding: '10px',
               borderRadius: '8px',
-              border: '1px solid #33333f',
-              backgroundColor: '#0d0d11',
+              border: '1px solid #2a2c3d',
+              backgroundColor: '#0d0e14',
               color: '#fff',
               boxSizing: 'border-box'
             }}
@@ -194,7 +191,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
           disabled={subiendo}
           style={{
             padding: '14px',
-            backgroundColor: '#ff6600',
+            backgroundColor: '#ff5500',
             color: '#fff',
             border: 'none',
             borderRadius: '8px',
@@ -204,7 +201,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
             marginTop: '10px'
           }}
         >
-          {subiendo ? 'Subiendo archivos...' : 'Subir Canción'}
+          {subiendo ? 'Subiendo...' : 'Subir Canción'}
         </button>
       </form>
     </div>
