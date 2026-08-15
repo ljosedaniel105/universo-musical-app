@@ -2,12 +2,11 @@ import React from 'react';
 
 export interface Cancion {
   id?: string | number;
-  titulo: string;
-  artista: string;
+  titulo?: string;
+  artista?: string;
   genero?: string;
   portada_url?: string;
   portadaUrl?: string;
-  likes?: number;
 }
 
 interface ListaCancionesProps {
@@ -16,8 +15,8 @@ interface ListaCancionesProps {
 
 export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) {
   return (
-    <div style={{ width: '100%', padding: '20px', boxSizing: 'border-box' }}>
-      {/* GRILLA DE CANCIONES QUE BAJA VERTICALMENTE */}
+    <div style={{ width: '100%', boxSizing: 'border-box' }}>
+      {/* Muestra las canciones en cuadrícula hacia abajo */}
       <div
         style={{
           display: 'grid',
@@ -29,22 +28,25 @@ export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) 
       >
         {canciones.map((cancion, index) => {
           const imagen = cancion.portada_url || cancion.portadaUrl || 'https://via.placeholder.com/200';
-          
+          const titulo = cancion.titulo || 'Sin título';
+          const artista = cancion.artista || 'Artista desconocido';
+
           return (
             <div
               key={cancion.id || index}
               style={{
-                backgroundColor: '#181818',
+                backgroundColor: '#18181c',
                 borderRadius: '12px',
                 padding: '15px',
                 display: 'flex',
                 flexDirection: 'column',
+                border: '1px solid #23232a',
                 boxSizing: 'border-box'
               }}
             >
               <img
                 src={imagen}
-                alt={cancion.titulo}
+                alt={titulo}
                 style={{
                   width: '100%',
                   height: '180px',
@@ -54,23 +56,23 @@ export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) 
                 }}
               />
 
-              <h3 style={{ color: '#fff', fontSize: '18px', margin: '0 0 4px 0', textAlign: 'center' }}>
-                {cancion.titulo}
+              <h3 style={{ color: '#fff', fontSize: '16px', margin: '0 0 6px 0', textAlign: 'center' }}>
+                {titulo}
               </h3>
 
-              <p style={{ color: '#aaa', fontSize: '14px', margin: '0 0 10px 0', textAlign: 'center' }}>
-                {cancion.artista}
+              <p style={{ color: '#aaa', fontSize: '13px', margin: '0 0 10px 0', textAlign: 'center' }}>
+                {artista}
               </p>
 
               {cancion.genero && (
                 <span
                   style={{
                     alignSelf: 'center',
-                    backgroundColor: '#2a2a2a',
+                    backgroundColor: '#25252e',
                     color: '#ff6600',
                     padding: '4px 10px',
                     borderRadius: '12px',
-                    fontSize: '12px',
+                    fontSize: '11px',
                     marginBottom: '12px'
                   }}
                 >
