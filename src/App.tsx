@@ -1,10 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 import ListaCanciones from "./ListaCanciones";
 
-// ==========================================
-// COMPONENTE: REPRODUCTOR PERSONALIZADO
-// ==========================================
 const ReproductorPersonalizado = ({
   cancion,
   onNext,
@@ -236,47 +233,27 @@ const ReproductorPersonalizado = ({
   );
 };
 
-// ==========================================
-// COMPONENTE PRINCIPAL APP
-// ==========================================
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [seccion, setSeccion] = useState<string>("descubrir");
+
   const [cancionActual, setCancionActual] = useState<any>(null);
   const [listaCanciones, setListaCanciones] = useState<any[]>([]);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isLoop, setIsLoop] = useState(false);
-  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCargando(false);
-    }, 1500);
-
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        setSession(session);
-        setCargando(false);
-        clearTimeout(timer);
-      })
-      .catch((err) => {
-        console.error("Error al obtener sesión:", err);
-        setCargando(false);
-        clearTimeout(timer);
-      });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setCargando(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timer);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const handlePlaySong = (song: any, list?: any[]) => {
@@ -288,6 +265,7 @@ export default function App() {
 
   const handleNextSong = () => {
     if (!cancionActual || listaCanciones.length === 0) return;
+
     if (isShuffle) {
       const filtradas = listaCanciones.filter((c) => c.id !== cancionActual.id);
       const randomIndex = Math.floor(Math.random() * filtradas.length);
@@ -312,24 +290,6 @@ export default function App() {
     }
   };
 
-  if (cargando) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: "#09090b",
-          color: "#F97316",
-          fontFamily: "sans-serif",
-        }}
-      >
-        <h2>Cargando Universo Musical...</h2>
-      </div>
-    );
-  }
-
   return (
     <div
       style={{
@@ -340,7 +300,6 @@ export default function App() {
         fontFamily: "system-ui, sans-serif",
       }}
     >
-      {/* SIDEBAR */}
       <aside
         style={{
           width: "250px",
@@ -378,7 +337,6 @@ export default function App() {
         </nav>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
       <main style={{ flex: 1, paddingBottom: cancionActual ? "90px" : "0px", overflowY: "auto" }}>
         {seccion === "descubrir" && (
           <ListaCanciones
@@ -388,7 +346,6 @@ export default function App() {
         )}
       </main>
 
-      {/* REPRODUCTOR */}
       {cancionActual && (
         <ReproductorPersonalizado
           cancion={cancionActual}
