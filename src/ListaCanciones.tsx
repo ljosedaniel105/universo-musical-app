@@ -85,28 +85,22 @@ export default function ListaCanciones({
         color: "#FFF"
       }}
     >
-      {/* Estilos CSS inyectados para ocultar la barra horizontal de géneros */}
+      {/* Estilos para que la barra horizontal de géneros sea de 10px de grosor y fácil de mover */}
       <style>{`
         .generos-container::-webkit-scrollbar {
-          height: 4px;
+          height: 10px !important;
         }
         .generos-container::-webkit-scrollbar-track {
-          background: #121212;
+          background: #121212 !important;
+          border-radius: 6px;
         }
         .generos-container::-webkit-scrollbar-thumb {
-          background: #3f3f46;
-          border-radius: 4px;
+          background: #3f3f46 !important;
+          border-radius: 6px;
         }
-        /* Opcional: si quieres ocultar completamente la barra horizontal pero mantener el scroll */
-        /*
-        .generos-container {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
+        .generos-container::-webkit-scrollbar-thumb:hover {
+          background: #52525b !important;
         }
-        .generos-container::-webkit-scrollbar {
-          display: none;
-        }
-        */
       `}</style>
 
       {/* 🔍 BUSCADOR DE CANCIONES */}
@@ -135,7 +129,7 @@ export default function ListaCanciones({
         🌎 Todas las Canciones
       </h1>
 
-      {/* 🏷️ PESTAÑAS DE GÉNEROS CON SCROLL OSCURO */}
+      {/* 🏷️ PESTAÑAS DE GÉNEROS CON BARRA MÁS FÁCIL DE ARRASTRAR */}
       <div
         className="generos-container"
         style={{
