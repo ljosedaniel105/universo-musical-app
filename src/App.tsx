@@ -61,23 +61,22 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#0c0d12', color: '#fff', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#090a0e', color: '#fff', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       
-      {/* MENÚ LATERAL RESTAURADO */}
-      <aside style={{ width: '250px', backgroundColor: '#111218', padding: '25px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #1c1d26', flexShrink: 0, boxSizing: 'border-box' }}>
+      {/* MENÚ LATERAL */}
+      <aside style={{ width: '250px', backgroundColor: '#0f1016', padding: '25px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #1a1b24', flexShrink: 0, boxSizing: 'border-box' }}>
         <div>
-          {/* LOGO ORIGINAL CON FALLBACK EN /logo.png Y FAVORITO */}
+          {/* LOGO ESFERA AZUL ORIGINAL */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '35px' }}>
-            <img 
-              src="/logo.png" 
-              alt="Logo" 
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = '/favicon.ico';
-              }}
-              style={{ width: '32px', height: '32px', objectFit: 'contain' }} 
-            />
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, #00d2ff 0%, #0040ff 60%, #ff5500 100%)',
+              boxShadow: '0 0 12px rgba(0, 150, 255, 0.8)',
+              border: '2px solid #ff5500',
+              flexShrink: 0
+            }} />
             <h2 style={{ color: '#ff5500', fontSize: '20px', margin: 0, fontWeight: 'bold' }}>
               Universo Musical
             </h2>
@@ -95,7 +94,7 @@ export default function App() {
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: vistaActual === 'descubrir' ? '#ff5500' : 'transparent',
-                color: vistaActual === 'descubrir' ? '#ffffff' : '#9da3b4',
+                color: vistaActual === 'descubrir' ? '#ffffff' : '#8f94a6',
                 cursor: 'pointer',
                 textAlign: 'left',
                 fontWeight: 'bold',
@@ -116,7 +115,7 @@ export default function App() {
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: vistaActual === 'playlists' ? '#ff5500' : 'transparent',
-                color: vistaActual === 'playlists' ? '#ffffff' : '#9da3b4',
+                color: vistaActual === 'playlists' ? '#ffffff' : '#8f94a6',
                 cursor: 'pointer',
                 textAlign: 'left',
                 fontWeight: 'bold',
@@ -137,7 +136,7 @@ export default function App() {
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: vistaActual === 'subir' ? '#ff5500' : 'transparent',
-                color: vistaActual === 'subir' ? '#ffffff' : '#9da3b4',
+                color: vistaActual === 'subir' ? '#ffffff' : '#8f94a6',
                 cursor: 'pointer',
                 textAlign: 'left',
                 fontWeight: 'bold',
@@ -158,7 +157,7 @@ export default function App() {
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: vistaActual === 'admin' ? '#ff5500' : 'transparent',
-                color: vistaActual === 'admin' ? '#ffffff' : '#9da3b4',
+                color: vistaActual === 'admin' ? '#ffffff' : '#8f94a6',
                 cursor: 'pointer',
                 textAlign: 'left',
                 fontWeight: 'bold',
@@ -171,7 +170,7 @@ export default function App() {
         </div>
 
         <div>
-          <p style={{ fontSize: '12px', color: '#6a7082', margin: '0 0 12px 0', wordBreak: 'break-all' }}>
+          <p style={{ fontSize: '12px', color: '#666a7a', margin: '0 0 12px 0', wordBreak: 'break-all' }}>
             👤 {session.user?.email}
           </p>
           <button
@@ -179,9 +178,9 @@ export default function App() {
             style={{
               width: '100%',
               padding: '10px',
-              backgroundColor: '#1c1d26',
+              backgroundColor: '#181922',
               color: '#ff4444',
-              border: '1px solid #2a2b38',
+              border: '1px solid #282936',
               borderRadius: '8px',
               cursor: 'pointer',
               fontWeight: 'bold'
@@ -192,7 +191,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* ÁREA DE CONTENIDO */}
+      {/* ÁREA PRINCIPAL */}
       <main style={{ flex: 1, padding: '32px 40px', overflowY: 'auto', boxSizing: 'border-box' }}>
         {vistaActual === 'descubrir' && (
           <div>
