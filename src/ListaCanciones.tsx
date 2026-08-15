@@ -2,23 +2,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 
 export default function ListaCanciones({ 
-  onPlaySong, 
-  userId 
+  onPlaySong 
 }: { 
   onPlaySong?: (song: any, songList?: any[]) => void;
-  userId?: string;
 }) {
   const [songs, setSongs] = useState<any[]>([]);
   const [generos, setGeneros] = useState<any[]>([]);
   const [selectedGenero, setSelectedGenero] = useState<string>("Todos");
   const [busqueda, setBusqueda] = useState<string>("");
-  const [favoritos, setFavoritos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
-    if (userId) cargarFavoritos();
-  }, [userId]);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -35,28 +31,6 @@ export default function ListaCanciones({
       console.error("Error al cargar datos:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const cargarFavoritos = async () => {
-    if (!userId) return;
-    const { data } = await supabase.from("favoritos").select("cancion_id").eq("usuario_id", userId);
-    if (data) {
-      setFavoritos(data.map((f: any) => f.cancion_id));
-    }
-  };
-
-  const toggleFavorito = async (cancionId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!userId) return;
-
-    const esFav = favoritos.includes(cancionId);
-    if (esFav) {
-      setFavoritos(favoritos.filter((id) => id !== cancionId));
-      await supabase.from("favoritos").delete().eq("usuario_id", userId).eq("cancion_id", cancionId);
-    } else {
-      setFavoritos([...favoritos, cancionId]);
-      await supabase.from("favoritos").insert([{ usuario_id: userId, cancion_id: cancionId }]);
     }
   };
 
@@ -185,136 +159,107 @@ export default function ListaCanciones({
             boxSizing: "border-box"
           }}
         >
-          {filteredSongs.map((song) => {
-            const esFav = favoritos.includes(song.id);
-            return (
-              <div
-                key={song.id}
+          {filteredSongs.map((song) => (
+            <div
+              key={song.id}
+              style={{
+                backgroundColor: "#171717",
+                borderRadius: "12px",
+                padding: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                border: "1px solid #262626",
+                boxSizing: "border-box"
+              }}
+            >
+              {/* Carátula */}
+              <img
+                src={song.portada || song.url_portada || "https://via.placeholder.com/180"}
+                alt={song.titulo}
                 style={{
-                  backgroundColor: "#171717",
-                  borderRadius: "12px",
-                  padding: "1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                  border: "1px solid #262626",
-                  boxSizing: "border-box",
-                  position: "relative"
+                  width: "100%",
+                  height: "180px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  marginBottom: "0.75rem"
+                }}
+              />
+
+              {/* Título */}
+              <h3
+                style={{
+                  fontSize: "1.05rem",
+                  fontWeight: "bold",
+                  margin: "0 0 0.25rem 0",
+                  width: "100%",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
                 }}
               >
-                {/* ❤️ Botón Me Gusta */}
-                <button
-                  onClick={(e) => toggleFavorito(song.id, e)}
-                  style={{
-                    position: "absolute",
-                    top: "1.25rem",
-                    right: "1.25rem",
-                    background: "rgba(0,0,0,0.6)",
-                    border: "none",
-                    borderRadius: "50%",
-                    width: "32px",
-                    height: "32px",
-                    color: esFav ? "#ff4444" : "#ffffff",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 2
-                  }}
-                  title={esFav ? "Quitar de favoritos" : "Guardar en favoritos"}
-                >
-                  {esFav ? "❤️" : "🤍"}
-                </button>
+                {song.titulo || song.title || "Sin Título"}
+              </h3>
 
-                {/* Carátula */}
-                <img
-                  src={song.portada || song.url_portada || "https://via.placeholder.com/180"}
-                  alt={song.titulo}
-                  style={{
-                    width: "100%",
-                    height: "180px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    marginBottom: "0.75rem"
-                  }}
-                />
+              {/* Artista */}
+              <p
+                style={{
+                  color: "#A1A1AA",
+                  fontSize: "0.875rem",
+                  margin: 0,
+                  width: "100%",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}
+              >
+                {song.artista || song.artist || "Artista desconocido"}
+              </p>
 
-                {/* Título */}
-                <h3
+              {/* 🏷️ Etiqueta de Género y Contador */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.4rem" }}>
+                <span
                   style={{
-                    fontSize: "1.05rem",
-                    fontWeight: "bold",
-                    margin: "0 0 0.25rem 0",
-                    width: "100%",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis"
+                    display: "inline-block",
+                    fontSize: "0.75rem",
+                    backgroundColor: "rgba(249, 115, 22, 0.15)",
+                    color: "#F97316",
+                    padding: "0.2rem 0.6rem",
+                    borderRadius: "12px",
+                    fontWeight: "500"
                   }}
                 >
-                  {song.titulo || song.title || "Sin Título"}
-                </h3>
-
-                {/* Artista */}
-                <p
-                  style={{
-                    color: "#A1A1AA",
-                    fontSize: "0.875rem",
-                    margin: 0,
-                    width: "100%",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis"
-                  }}
-                >
-                  {song.artista || song.artist || "Artista desconocido"}
-                </p>
-
-                {/* 🏷️ Etiqueta de Género y Contador */}
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.4rem" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      fontSize: "0.75rem",
-                      backgroundColor: "rgba(249, 115, 22, 0.15)",
-                      color: "#F97316",
-                      padding: "0.2rem 0.6rem",
-                      borderRadius: "12px",
-                      fontWeight: "500"
-                    }}
-                  >
-                    {song.genero || "Sin Género"}
-                  </span>
-                  <span style={{ fontSize: "0.75rem", color: "#666" }}>
-                    ▶ {song.reproducciones || 0}
-                  </span>
-                </div>
-
-                {/* Botón Escuchar */}
-                <button
-                  onClick={() => onPlaySong && onPlaySong(song, filteredSongs)}
-                  style={{
-                    width: "100%",
-                    marginTop: "1rem",
-                    padding: "0.6rem",
-                    backgroundColor: "#F97316",
-                    color: "#FFF",
-                    border: "none",
-                    borderRadius: "20px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.5rem"
-                  }}
-                >
-                  ▶ Escuchar
-                </button>
+                  {song.genero || "Sin Género"}
+                </span>
+                <span style={{ fontSize: "0.75rem", color: "#666" }}>
+                  ▶ {song.reproducciones || 0}
+                </span>
               </div>
-            );
-          })}
+
+              {/* Botón Escuchar */}
+              <button
+                onClick={() => onPlaySong && onPlaySong(song, filteredSongs)}
+                style={{
+                  width: "100%",
+                  marginTop: "1rem",
+                  padding: "0.6rem",
+                  backgroundColor: "#F97316",
+                  color: "#FFF",
+                  border: "none",
+                  borderRadius: "20px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem"
+                }}
+              >
+                ▶ Escuchar
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
