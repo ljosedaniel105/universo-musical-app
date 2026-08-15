@@ -490,9 +490,9 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif', overflow: 'hidden' }}>
       {/* Sidebar */}
-      <div style={{ width: '250px', backgroundColor: '#121215', borderRight: '1px solid #222228', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', position: 'fixed', top: 0, bottom: 0 }}>
+      <div style={{ width: '250px', backgroundColor: '#121215', borderRight: '1px solid #222228', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', position: 'fixed', top: 0, bottom: 0, left: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img src={LOGO_URL} alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '50%' }} />
           <h3 style={{ margin: 0, color: '#ff6b00' }}>Universo Musical</h3>
@@ -527,7 +527,15 @@ export default function App() {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ marginLeft: '250px', flex: 1, padding: '30px', paddingBottom: cancionActual ? '90px' : '30px' }}>
+      <div style={{ 
+        marginLeft: '250px', 
+        flex: 1, 
+        height: '100vh', 
+        overflowY: 'auto', 
+        boxSizing: 'border-box',
+        padding: '30px', 
+        paddingBottom: cancionActual ? '120px' : '30px' 
+      }}>
         {seccion === 'descubrir' && <ListaCanciones onPlay={handlePlaySong} userId={session?.user?.id} />}
         {seccion === 'subir' && <SubirCancion />}
         {seccion === 'admin' && esAdmin && <PanelAdmin />}
