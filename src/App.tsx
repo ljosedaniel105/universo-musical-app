@@ -248,6 +248,13 @@ export default function App() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isLoop, setIsLoop] = useState(false);
 
+  // Estados del Formulario
+  const [titulo, setTitulo] = useState("");
+  const [genero, setGenero] = useState("");
+  const [artista, setArtista] = useState("");
+  const [archivoMp3, setArchivoMp3] = useState<File | null>(null);
+  const [archivoPortada, setArchivoPortada] = useState<File | null>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -300,7 +307,6 @@ export default function App() {
     }
   };
 
-  // Función auxiliar para estilar botones de navegación
   const getBtnStyle = (sectionKey: string) => {
     const isActive = seccion === sectionKey;
     return {
@@ -310,7 +316,7 @@ export default function App() {
       padding: "0.75rem 1rem",
       borderRadius: "12px",
       border: isActive ? "1px solid #F97316" : "1px solid transparent",
-      backgroundColor: isActive ? "rgba(249, 115, 22, 0.12)" : "transparent",
+      backgroundColor: isActive ? "rgba(249, 115, 22, 0.08)" : "transparent",
       color: isActive ? "#F97316" : "#A1A1AA",
       fontWeight: isActive ? "600" : "400",
       cursor: "pointer",
@@ -322,6 +328,8 @@ export default function App() {
 
   const userEmail = session?.user?.email || "ljosedaniel105@gmail.com";
   const userName = userEmail.split("@")[0];
+
+  const LOGO_URL = "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
 
   return (
     <div
@@ -356,20 +364,11 @@ export default function App() {
               paddingLeft: "0.25rem",
             }}
           >
-            <div
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background: "radial-gradient(circle, #3b82f6 0%, #1e40af 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
-              }}
-            >
-              🌌
-            </div>
+            <img
+              src={LOGO_URL}
+              alt="Logo Universo Musical"
+              style={{ width: "32px", height: "32px", objectFit: "contain" }}
+            />
             <h2
               style={{
                 fontSize: "1.1rem",
@@ -486,9 +485,176 @@ export default function App() {
         )}
 
         {seccion === "subir" && (
-          <div style={{ padding: "2rem", color: "#A1A1AA" }}>
-            <h2>📂 Subir Nueva Canción</h2>
-            <p>Formulario de carga de canciones...</p>
+          <div style={{ maxWidth: "650px", margin: "2rem auto", padding: "0 1rem" }}>
+            <h2
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                color: "#F97316",
+                fontSize: "1.4rem",
+                marginBottom: "2rem",
+              }}
+            >
+              📁 Subir Nueva Canción
+            </h2>
+
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              style={{
+                backgroundColor: "#121215",
+                padding: "2rem",
+                borderRadius: "12px",
+                border: "1px solid #222",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem",
+              }}
+            >
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+                  Título de la Canción:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. Ojitos Lindos"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    border: "1px solid #27272a",
+                    backgroundColor: "#09090b",
+                    color: "#fff",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <label style={{ fontSize: "0.9rem" }}>Género Musical:</label>
+                  <span style={{ color: "#F97316", fontSize: "0.8rem", cursor: "pointer" }}>
+                    + Agregar nuevo género
+                  </span>
+                </div>
+                <select
+                  value={genero}
+                  onChange={(e) => setGenero(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    border: "1px solid #27272a",
+                    backgroundColor: "#09090b",
+                    color: "#fff",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <option value="">-- Selecciona un género --</option>
+                  <option value="urbano">Urbano</option>
+                  <option value="pop">Pop</option>
+                  <option value="rock">Rock</option>
+                </select>
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <label style={{ fontSize: "0.9rem" }}>Artista / Banda:</label>
+                  <span style={{ color: "#F97316", fontSize: "0.8rem", cursor: "pointer" }}>
+                    + Agregar nuevo artista
+                  </span>
+                </div>
+                <select
+                  value={artista}
+                  onChange={(e) => setArtista(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    border: "1px solid #27272a",
+                    backgroundColor: "#09090b",
+                    color: "#fff",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <option value="">-- Selecciona un artista --</option>
+                  <option value="prince_royce">Prince Royce</option>
+                  <option value="temerarios">Los Temerarios</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+                  🎵 Seleccionar MP3:
+                </label>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => setArchivoMp3(e.target.files?.[0] || null)}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "8px",
+                    border: "1px solid #27272a",
+                    backgroundColor: "#09090b",
+                    color: "#fff",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+                  🖼️ Imagen de Portada (Opcional):
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setArchivoPortada(e.target.files?.[0] || null)}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "8px",
+                    border: "1px solid #27272a",
+                    backgroundColor: "#09090b",
+                    color: "#fff",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  padding: "0.85rem",
+                  borderRadius: "10px",
+                  border: "none",
+                  backgroundColor: "#F97316",
+                  color: "#FFF",
+                  fontWeight: "bold",
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  marginTop: "1rem",
+                }}
+              >
+                Guardar Canción 🚀
+              </button>
+            </form>
           </div>
         )}
 
