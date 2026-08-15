@@ -85,6 +85,30 @@ export default function ListaCanciones({
         color: "#FFF"
       }}
     >
+      {/* Estilos CSS inyectados para ocultar la barra horizontal de géneros */}
+      <style>{`
+        .generos-container::-webkit-scrollbar {
+          height: 4px;
+        }
+        .generos-container::-webkit-scrollbar-track {
+          background: #121212;
+        }
+        .generos-container::-webkit-scrollbar-thumb {
+          background: #3f3f46;
+          border-radius: 4px;
+        }
+        /* Opcional: si quieres ocultar completamente la barra horizontal pero mantener el scroll */
+        /*
+        .generos-container {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .generos-container::-webkit-scrollbar {
+          display: none;
+        }
+        */
+      `}</style>
+
       {/* 🔍 BUSCADOR DE CANCIONES */}
       <div style={{ marginBottom: "1.5rem", maxWidth: "400px", width: "100%" }}>
         <input
@@ -106,13 +130,14 @@ export default function ListaCanciones({
         />
       </div>
 
-      {/* Encabezado sin el número */}
+      {/* Encabezado */}
       <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", textAlign: "left", marginBottom: "1.5rem" }}>
         🌎 Todas las Canciones
       </h1>
 
-      {/* 🏷️ PESTAÑAS DE GÉNEROS */}
+      {/* 🏷️ PESTAÑAS DE GÉNEROS CON SCROLL OSCURO */}
       <div
+        className="generos-container"
         style={{
           display: "flex",
           gap: "0.75rem",
@@ -164,7 +189,7 @@ export default function ListaCanciones({
         })}
       </div>
 
-      {/* 🎵 GRILLA ADAPTATIVA PARA SCROLL VERTICAL */}
+      {/* 🎵 GRILLA ADAPTATIVA */}
       {loading ? (
         <p style={{ color: "#AAA", textAlign: "center" }}>Cargando canciones...</p>
       ) : filteredSongs.length === 0 ? (
