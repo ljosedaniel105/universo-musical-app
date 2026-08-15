@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
+// @ts-ignore
 import { supabase } from "./supabase";
 
 export default function ListaCanciones({ 
   userId,
-  onPlaySong 
+  onPlay 
 }: { 
   userId?: string;
-  onPlaySong?: (song: any, songList?: any[]) => void;
+  onPlay?: (song: any, songList?: any[]) => void;
 }) {
   const [songs, setSongs] = useState<any[]>([]);
   const [generos, setGeneros] = useState<any[]>([]);
@@ -190,103 +191,74 @@ export default function ListaCanciones({
             boxSizing: "border-box"
           }}
         >
-          {filteredSongs.map((song) => (
-            <div
-              key={song.id}
-              style={{
-                backgroundColor: "#171717",
-                borderRadius: "12px",
-                padding: "1rem",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-                border: "1px solid #262626",
-                boxSizing: "border-box"
-              }}
-            >
-              <img
-                src={song.portada || song.url_portada || "https://via.placeholder.com/180"}
-                alt={song.titulo}
-                style={{
-                  width: "100%",
-                  height: "180px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  marginBottom: "0.75rem"
-                }}
-              />
+          {filteredSongs.map((song) => {
+            const PORTADA_DEFAULT = 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500';
+            const urlPortada = song.portada_url || song.url_portada || song.portada || PORTADA_DEFAULT;
+            const totalLikes = likesMap[song.id] || 0;
 
-              <h3
+            return (
+              <div
+                key={song.id}
                 style={{
-                  fontSize: "1.05rem",
-                  fontWeight: "bold",
-                  margin: "0 0 0.25rem 0",
-                  width: "100%",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
+                  backgroundColor: "#171717",
+                  borderRadius: "12px",
+                  padding: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  border: "1px solid #262626"
                 }}
               >
-                {song.titulo || song.title || "Sin Título"}
-              </h3>
-
-              <p
-                style={{
-                  color: "#A1A1AA",
-                  fontSize: "0.875rem",
-                  margin: 0,
-                  width: "100%",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}
-              >
-                {song.artista || song.artist || "Artista desconocido"}
-              </p>
-
-              {/* Genero y Conteo de Me Gusta público */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.4rem" }}>
-                <span
+                <img
+                  src={urlPortada}
+                  alt={song.titulo || song.title}
                   style={{
-                    display: "inline-block",
-                    fontSize: "0.75rem",
-                    backgroundColor: "rgba(249, 115, 22, 0.15)",
-                    color: "#F97316",
-                    padding: "0.2rem 0.6rem",
-                    borderRadius: "12px",
-                    fontWeight: "500"
+                    width: "100%",
+                    height: "160px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    marginBottom: "0.75rem"
+                  }}
+                />
+                <h3 style={{ fontSize: "1rem", fontWeight: "bold", margin: "0 0 0.25rem 0", color: "#FFF" }}>
+                  {song.titulo || song.title || "Sin título"}
+                </h3>
+                <p style={{ fontSize: "0.85rem", color: "#AAA", margin: "0 0 0.5rem 0" }}>
+                  {song.artista || song.artist || "Artista desconocido"}
+                </p>
+                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem" }}>
+                  {song.genero && (
+                    <span style={{ fontSize: "0.75rem", backgroundColor: "#262626", color: "#F97316", padding: "0.2rem 0.5rem", borderRadius: "10px" }}>
+                      {song.genero}
+                    </span>
+                  )}
+                  <span style={{ fontSize: "0.75rem", color: "#AAA" }}>
+                    👍 {totalLikes}
+                  </span>
+                </div>
+                <button
+                  onClick={() => onPlay && onPlay(song, filteredSongs)}
+                  style={{
+                    width: "100%",
+                    padding: "0.6rem",
+                    borderRadius: "20px",
+                    border: "none",
+                    backgroundColor: "#F97316",
+                    color: "#FFF",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.5rem"
                   }}
                 >
-                  {song.genero || "Sin Género"}
-                </span>
-                <span style={{ fontSize: "0.75rem", color: "#4Ade80", fontWeight: "600" }}>
-                  👍 {likesMap[song.id] || 0}
-                </span>
+                  ► Escuchar
+                </button>
               </div>
-
-              <button
-                onClick={() => onPlaySong && onPlaySong(song, filteredSongs)}
-                style={{
-                  width: "100%",
-                  marginTop: "1rem",
-                  padding: "0.6rem",
-                  backgroundColor: "#F97316",
-                  color: "#FFF",
-                  border: "none",
-                  borderRadius: "20px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.5rem"
-                }}
-              >
-                ▶ Escuchar
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
