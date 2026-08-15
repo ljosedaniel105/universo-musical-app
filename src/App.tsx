@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 import ListaCanciones from "./ListaCanciones";
 
+// ==========================================
+// COMPONENTE: REPRODUCTOR PERSONALIZADO
+// ==========================================
 const ReproductorPersonalizado = ({
   cancion,
   onNext,
@@ -233,6 +236,9 @@ const ReproductorPersonalizado = ({
   );
 };
 
+// ==========================================
+// COMPONENTE PRINCIPAL APP
+// ==========================================
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [seccion, setSeccion] = useState<string>("descubrir");
@@ -255,6 +261,10 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   const handlePlaySong = (song: any, list?: any[]) => {
     setCancionActual(song);
@@ -290,6 +300,29 @@ export default function App() {
     }
   };
 
+  // Función auxiliar para estilar botones de navegación
+  const getBtnStyle = (sectionKey: string) => {
+    const isActive = seccion === sectionKey;
+    return {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.75rem",
+      padding: "0.75rem 1rem",
+      borderRadius: "12px",
+      border: isActive ? "1px solid #F97316" : "1px solid transparent",
+      backgroundColor: isActive ? "rgba(249, 115, 22, 0.12)" : "transparent",
+      color: isActive ? "#F97316" : "#A1A1AA",
+      fontWeight: isActive ? "600" : "400",
+      cursor: "pointer",
+      textAlign: "left" as const,
+      fontSize: "0.95rem",
+      transition: "all 0.2s ease",
+    };
+  };
+
+  const userEmail = session?.user?.email || "ljosedaniel105@gmail.com";
+  const userName = userEmail.split("@")[0];
+
   return (
     <div
       style={{
@@ -297,46 +330,146 @@ export default function App() {
         minHeight: "100vh",
         backgroundColor: "#09090b",
         color: "#FFF",
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
+      {/* 🧭 SIDEBAR / MENÚ LATERAL */}
       <aside
         style={{
           width: "250px",
-          backgroundColor: "#121215",
-          padding: "2rem 1.5rem",
+          backgroundColor: "#0d0d0f",
+          padding: "1.75rem 1.25rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.5rem",
-          borderRight: "1px solid #222",
+          justifyContent: "space-between",
+          borderRight: "1px solid #1c1c21",
         }}
       >
-        <h2 style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#F97316", margin: 0 }}>
-          🌌 UNIVERSO MUSICAL
-        </h2>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <button
-            onClick={() => setSeccion("descubrir")}
+        <div>
+          {/* Logo */}
+          <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "0.75rem",
-              padding: "0.75rem 1rem",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: seccion === "descubrir" ? "#F97316" : "transparent",
-              color: "#FFF",
-              fontWeight: seccion === "descubrir" ? "bold" : "normal",
-              cursor: "pointer",
-              textAlign: "left",
+              gap: "10px",
+              marginBottom: "2.5rem",
+              paddingLeft: "0.25rem",
             }}
           >
-            🏠 Descubrir
+            <div
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "50%",
+                background: "radial-gradient(circle, #3b82f6 0%, #1e40af 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 0 10px rgba(59, 130, 246, 0.5)",
+              }}
+            >
+              🌌
+            </div>
+            <h2
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: "800",
+                color: "#FFFFFF",
+                letterSpacing: "0.5px",
+                margin: 0,
+              }}
+            >
+              UNIVERSO MUSICAL
+            </h2>
+          </div>
+
+          {/* Menú de Opciones */}
+          <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <button onClick={() => setSeccion("descubrir")} style={getBtnStyle("descubrir")}>
+              🏠 Descubrir
+            </button>
+
+            <button onClick={() => setSeccion("playlists")} style={getBtnStyle("playlists")}>
+              📑 Mis Playlists
+            </button>
+
+            <button onClick={() => setSeccion("subir")} style={getBtnStyle("subir")}>
+              📤 Subir Música
+            </button>
+
+            <button onClick={() => setSeccion("admin")} style={getBtnStyle("admin")}>
+              🛡️ Admin Panel
+            </button>
+          </nav>
+        </div>
+
+        {/* Sección de Perfil y Logout */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "0 0.5rem" }}>
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                backgroundColor: "#8b5cf6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#FFF",
+                fontWeight: "bold",
+              }}
+            >
+              👤
+            </div>
+            <div style={{ overflow: "hidden" }}>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "bold",
+                  color: "#FFF",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {userName}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  color: "#71717a",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {userEmail}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "0.75rem 1rem",
+              borderRadius: "10px",
+              border: "1px solid #3f1d1d",
+              backgroundColor: "rgba(127, 29, 29, 0.2)",
+              color: "#ef4444",
+              fontWeight: "600",
+              fontSize: "0.85rem",
+              cursor: "pointer",
+            }}
+          >
+            ↪ Cerrar Sesión
           </button>
-        </nav>
+        </div>
       </aside>
 
+      {/* 📺 CONTENIDO PRINCIPAL */}
       <main style={{ flex: 1, paddingBottom: cancionActual ? "90px" : "0px", overflowY: "auto" }}>
         {seccion === "descubrir" && (
           <ListaCanciones
@@ -344,8 +477,30 @@ export default function App() {
             onPlaySong={(c: any, lista?: any[]) => handlePlaySong(c, lista)}
           />
         )}
+
+        {seccion === "playlists" && (
+          <div style={{ padding: "2rem", color: "#A1A1AA" }}>
+            <h2>📑 Mis Playlists</h2>
+            <p>Sección en desarrollo...</p>
+          </div>
+        )}
+
+        {seccion === "subir" && (
+          <div style={{ padding: "2rem", color: "#A1A1AA" }}>
+            <h2>📂 Subir Nueva Canción</h2>
+            <p>Formulario de carga de canciones...</p>
+          </div>
+        )}
+
+        {seccion === "admin" && (
+          <div style={{ padding: "2rem", color: "#A1A1AA" }}>
+            <h2>🛡️ Admin Panel</h2>
+            <p>Panel de administración...</p>
+          </div>
+        )}
       </main>
 
+      {/* 🎵 REPRODUCTOR INFERIOR */}
       {cancionActual && (
         <ReproductorPersonalizado
           cancion={cancionActual}
