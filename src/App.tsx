@@ -63,12 +63,17 @@ export default function App() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#0d0d11', color: '#fff', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       
-      {/* MENÚ LATERAL CORTA LA PANTALLA FIJA */}
+      {/* MENÚ LATERAL CON LOGO */}
       <aside style={{ width: '250px', backgroundColor: '#141419', padding: '25px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #22222a', flexShrink: 0, boxSizing: 'border-box' }}>
         <div>
-          <h2 style={{ color: '#ff6600', fontSize: '22px', margin: '0 0 35px 0', fontWeight: 'bold' }}>
-            🌌 Universo Musical
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '35px' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#ff6600', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+              🌌
+            </div>
+            <h2 style={{ color: '#ff6600', fontSize: '20px', margin: 0, fontWeight: 'bold' }}>
+              Universo Musical
+            </h2>
+          </div>
 
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <button
@@ -171,7 +176,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* ÁREA DE CONTENIDO */}
+      {/* CONTENIDO PRINCIPAL */}
       <main style={{ flex: 1, padding: '30px', overflowY: 'auto', boxSizing: 'border-box' }}>
         {vistaActual === 'descubrir' && (
           <div>
