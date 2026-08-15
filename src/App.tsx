@@ -3,9 +3,16 @@ import { supabase } from './supabase';
 import ListaCanciones from './ListaCanciones';
 import SubirCancion from './SubirCancion';
 import Auth from './Auth';
-import Playlists from './Playlists';
 import PanelAdmin from './PanelAdmin';
-import './App.css';
+
+function VistaPlaylists() {
+  return (
+    <div style={{ color: '#fff', padding: '20px' }}>
+      <h2 style={{ color: '#ff6600', marginBottom: '15px' }}>Tus Playlists</h2>
+      <p style={{ color: '#aaa' }}>Aún no tienes listas de reproducción creadas.</p>
+    </div>
+  );
+}
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
@@ -13,7 +20,6 @@ export default function App() {
   const [canciones, setCanciones] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  // Comprobar la sesión activa de Supabase
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -26,7 +32,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Cargar las canciones desde Supabase
   const cargarCanciones = async () => {
     setCargando(true);
     try {
@@ -36,7 +41,7 @@ export default function App() {
         .order('id', { ascending: false });
 
       if (error) {
-        console.error("Error al cargar canciones:", error);
+        console.error("Error al cargar canciones de Supabase:", error);
       } else {
         setCanciones(data || []);
       }
@@ -56,30 +61,30 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#0b0b0d', color: '#fff', overflowX: 'hidden' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#0d0d11', color: '#fff', margin: 0, padding: 0, overflowX: 'hidden', boxSizing: 'border-box' }}>
       
-      {/* MENU LATERAL */}
-      <aside style={{ width: '240px', backgroundColor: '#121215', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #1f1f23', flexShrink: 0 }}>
+      {/* MENÚ LATERAL CORTA LA PANTALLA FIJA */}
+      <aside style={{ width: '250px', backgroundColor: '#141419', padding: '25px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRight: '1px solid #22222a', flexShrink: 0, boxSizing: 'border-box' }}>
         <div>
-          <h2 style={{ color: '#ff6600', fontSize: '20px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h2 style={{ color: '#ff6600', fontSize: '22px', margin: '0 0 35px 0', fontWeight: 'bold' }}>
             🌌 Universo Musical
           </h2>
 
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <button
               onClick={() => setVistaActual('descubrir')}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '12px',
+                display: 'block',
+                width: '100%',
+                padding: '12px 15px',
                 borderRadius: '8px',
                 border: 'none',
-                backgroundColor: vistaActual === 'descubrir' ? '#1f1f23' : 'transparent',
-                color: vistaActual === 'descubrir' ? '#ff6600' : '#aaa',
+                backgroundColor: vistaActual === 'descubrir' ? '#ff6600' : 'transparent',
+                color: vistaActual === 'descubrir' ? '#fff' : '#aaa',
                 cursor: 'pointer',
                 textAlign: 'left',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: '15px'
               }}
             >
               🏠 Descubrir
@@ -88,17 +93,17 @@ export default function App() {
             <button
               onClick={() => setVistaActual('playlists')}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '12px',
+                display: 'block',
+                width: '100%',
+                padding: '12px 15px',
                 borderRadius: '8px',
                 border: 'none',
-                backgroundColor: vistaActual === 'playlists' ? '#1f1f23' : 'transparent',
-                color: vistaActual === 'playlists' ? '#ff6600' : '#aaa',
+                backgroundColor: vistaActual === 'playlists' ? '#ff6600' : 'transparent',
+                color: vistaActual === 'playlists' ? '#fff' : '#aaa',
                 cursor: 'pointer',
                 textAlign: 'left',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: '15px'
               }}
             >
               📜 Playlists
@@ -107,17 +112,17 @@ export default function App() {
             <button
               onClick={() => setVistaActual('subir')}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '12px',
+                display: 'block',
+                width: '100%',
+                padding: '12px 15px',
                 borderRadius: '8px',
                 border: 'none',
-                backgroundColor: vistaActual === 'subir' ? '#1f1f23' : 'transparent',
-                color: vistaActual === 'subir' ? '#ff6600' : '#aaa',
+                backgroundColor: vistaActual === 'subir' ? '#ff6600' : 'transparent',
+                color: vistaActual === 'subir' ? '#fff' : '#aaa',
                 cursor: 'pointer',
                 textAlign: 'left',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: '15px'
               }}
             >
               📤 Subir Canción
@@ -126,17 +131,17 @@ export default function App() {
             <button
               onClick={() => setVistaActual('admin')}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '12px',
+                display: 'block',
+                width: '100%',
+                padding: '12px 15px',
                 borderRadius: '8px',
                 border: 'none',
-                backgroundColor: vistaActual === 'admin' ? '#1f1f23' : 'transparent',
-                color: vistaActual === 'admin' ? '#ff6600' : '#aaa',
+                backgroundColor: vistaActual === 'admin' ? '#ff6600' : 'transparent',
+                color: vistaActual === 'admin' ? '#fff' : '#aaa',
                 cursor: 'pointer',
                 textAlign: 'left',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: '15px'
               }}
             >
               🛡️ Panel Admin
@@ -145,7 +150,7 @@ export default function App() {
         </div>
 
         <div>
-          <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px', wordBreak: 'break-all' }}>
+          <p style={{ fontSize: '12px', color: '#888', margin: '0 0 10px 0', wordBreak: 'break-all' }}>
             👤 {session.user?.email}
           </p>
           <button
@@ -153,9 +158,9 @@ export default function App() {
             style={{
               width: '100%',
               padding: '10px',
-              backgroundColor: '#222',
+              backgroundColor: '#251515',
               color: '#ff4444',
-              border: 'none',
+              border: '1px solid #441515',
               borderRadius: '8px',
               cursor: 'pointer',
               fontWeight: 'bold'
@@ -166,22 +171,20 @@ export default function App() {
         </div>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <main style={{ flex: 1, padding: '30px', overflowY: 'auto', overflowX: 'hidden' }}>
+      {/* ÁREA DE CONTENIDO */}
+      <main style={{ flex: 1, padding: '30px', overflowY: 'auto', boxSizing: 'border-box' }}>
         {vistaActual === 'descubrir' && (
           <div>
-            <h1 style={{ marginBottom: '20px', color: '#fff' }}>Descubrir</h1>
+            <h1 style={{ margin: '0 0 25px 0', color: '#fff', fontSize: '28px' }}>Descubrir</h1>
             {cargando ? (
               <p style={{ color: '#aaa' }}>Cargando canciones...</p>
-            ) : canciones.length === 0 ? (
-              <p style={{ color: '#aaa' }}>No hay canciones registradas aún.</p>
             ) : (
               <ListaCanciones canciones={canciones} />
             )}
           </div>
         )}
 
-        {vistaActual === 'playlists' && <Playlists />}
+        {vistaActual === 'playlists' && <VistaPlaylists />}
 
         {vistaActual === 'subir' && (
           <SubirCancion alSubirExitoso={() => {
