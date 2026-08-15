@@ -2,31 +2,59 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 
 export default function ListaCanciones({ 
+  userId,
   onPlaySong 
 }: { 
+  userId?: string;
   onPlaySong?: (song: any, songList?: any[]) => void;
 }) {
   const [songs, setSongs] = useState<any[]>([]);
   const [generos, setGeneros] = useState<any[]>([]);
   const [selectedGenero, setSelectedGenero] = useState<string>("Todos");
   const [busqueda, setBusqueda] = useState<string>("");
+  const [dislikedIds, setDislikedIds] = useState<string[]>([]);
+  const [likesMap, setLikesMap] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [userId]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      // 1. Cargar todas las canciones
       const { data: songsData } = await supabase.from("canciones").select("*");
       if (songsData) setSongs(songsData);
 
+      // 2. Cargar géneros
       const { data: generosData } = await supabase
         .from("generos")
         .select("*")
         .order("nombre", { ascending: true });
       if (generosData) setGeneros(generosData);
+
+      // 3. Cargar las canciones ocultadas por este usuario ("No Me Gusta")
+      if (userId) {
+        const { data: dislikeData } = await supabase
+          .from("no_me_gusta")
+          .select("cancion_id")
+          .eq("usuario_id", userId);
+        
+        if (dislikeData) {
+          setDislikedIds(dislikeData.map((item: any) => item.cancion_id));
+        }
+      }
+
+      // 4. Contar total de "Me Gusta" por canción
+      const { data: likesData } = await supabase.from("me_gusta").select("cancion_id");
+      if (likesData) {
+        const counts: { [key: string]: number } = {};
+        likesData.forEach((item: any) => {
+          counts[item.cancion_id] = (counts[item.cancion_id] || 0) + 1;
+        });
+        setLikesMap(counts);
+      }
     } catch (error) {
       console.error("Error al cargar datos:", error);
     } finally {
@@ -34,7 +62,10 @@ export default function ListaCanciones({
     }
   };
 
+  // Filtrado de canciones (Excluye las que tienen "No Me Gusta")
   const filteredSongs = songs.filter((song) => {
+    if (dislikedIds.includes(song.id)) return false;
+
     const cumpleGenero =
       selectedGenero === "Todos" ||
       song.genero?.toLowerCase() === selectedGenero.toLowerCase();
@@ -174,7 +205,6 @@ export default function ListaCanciones({
                 boxSizing: "border-box"
               }}
             >
-              {/* Carátula */}
               <img
                 src={song.portada || song.url_portada || "https://via.placeholder.com/180"}
                 alt={song.titulo}
@@ -187,7 +217,6 @@ export default function ListaCanciones({
                 }}
               />
 
-              {/* Título */}
               <h3
                 style={{
                   fontSize: "1.05rem",
@@ -202,7 +231,6 @@ export default function ListaCanciones({
                 {song.titulo || song.title || "Sin Título"}
               </h3>
 
-              {/* Artista */}
               <p
                 style={{
                   color: "#A1A1AA",
@@ -217,7 +245,7 @@ export default function ListaCanciones({
                 {song.artista || song.artist || "Artista desconocido"}
               </p>
 
-              {/* 🏷️ Etiqueta de Género y Contador */}
+              {/* Genero y Conteo de Me Gusta público */}
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.4rem" }}>
                 <span
                   style={{
@@ -232,12 +260,11 @@ export default function ListaCanciones({
                 >
                   {song.genero || "Sin Género"}
                 </span>
-                <span style={{ fontSize: "0.75rem", color: "#666" }}>
-                  ▶ {song.reproducciones || 0}
+                <span style={{ fontSize: "0.75rem", color: "#4Ade80", fontWeight: "600" }}>
+                  👍 {likesMap[song.id] || 0}
                 </span>
               </div>
 
-              {/* Botón Escuchar */}
               <button
                 onClick={() => onPlaySong && onPlaySong(song, filteredSongs)}
                 style={{
