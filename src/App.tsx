@@ -27,6 +27,19 @@ const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 );
 
+// Iconos SVG estilo YouTube Music
+const IconLike = ({ filled }: { filled: boolean }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+  </svg>
+);
+
+const IconDislike = ({ filled }: { filled: boolean }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3" />
+  </svg>
+);
+
 // Reproductor Personalizado - Estilo YouTube Music
 const ReproductorPersonalizado = ({ 
   cancion, 
@@ -46,6 +59,7 @@ const ReproductorPersonalizado = ({
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [velocidad, setVelocidad] = useState(1);
   const [meGusta, setMeGusta] = useState(false);
+  const [noMeGusta, setNoMeGusta] = useState(false);
   const [totalLikes, setTotalLikes] = useState(0);
 
   const audioUrl = cancion?.url_audio || cancion?.url_archivo || cancion?.url_cancion || cancion?.url;
@@ -71,14 +85,23 @@ const ReproductorPersonalizado = ({
       setTotalLikes(count || 0);
 
       if (userId) {
-        const { data } = await supabase
+        const { data: likeData } = await supabase
           .from('me_gusta')
           .select('id')
           .eq('usuario_id', userId)
           .eq('cancion_id', cancion.id)
           .maybeSingle();
 
-        setMeGusta(!!data);
+        setMeGusta(!!likeData);
+
+        const { data: dislikeData } = await supabase
+          .from('no_me_gusta')
+          .select('id')
+          .eq('usuario_id', userId)
+          .eq('cancion_id', cancion.id)
+          .maybeSingle();
+
+        setNoMeGusta(!!dislikeData);
       }
     };
 
@@ -98,6 +121,7 @@ const ReproductorPersonalizado = ({
         .eq('cancion_id', cancion.id);
     } else {
       setMeGusta(true);
+      setNoMeGusta(false);
       setTotalLikes((prev) => prev + 1);
       await supabase
         .from('me_gusta')
@@ -114,21 +138,31 @@ const ReproductorPersonalizado = ({
   const handleDislike = async () => {
     if (!userId || !cancion?.id) return;
 
-    if (meGusta) {
-      setMeGusta(false);
-      setTotalLikes((prev) => Math.max(0, prev - 1));
+    if (noMeGusta) {
+      setNoMeGusta(false);
       await supabase
-        .from('me_gusta')
+        .from('no_me_gusta')
         .delete()
         .eq('usuario_id', userId)
         .eq('cancion_id', cancion.id);
+    } else {
+      if (meGusta) {
+        setMeGusta(false);
+        setTotalLikes((prev) => Math.max(0, prev - 1));
+        await supabase
+          .from('me_gusta')
+          .delete()
+          .eq('usuario_id', userId)
+          .eq('cancion_id', cancion.id);
+      }
+
+      setNoMeGusta(true);
+      await supabase
+        .from('no_me_gusta')
+        .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
+
+      onNext();
     }
-
-    await supabase
-      .from('no_me_gusta')
-      .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
-
-    onNext();
   };
 
   const togglePlay = () => {
@@ -172,8 +206,8 @@ const ReproductorPersonalizado = ({
       bottom: 0,
       left: '250px',
       right: 0,
-      backgroundColor: '#212121',
-      borderTop: '1px solid #383838',
+      backgroundColor: '#0f0f0f',
+      borderTop: '1px solid #272727',
       display: 'flex',
       flexDirection: 'column',
       zIndex: 1000
@@ -203,28 +237,38 @@ const ReproductorPersonalizado = ({
         }} 
       />
 
-      {/* Contenido de la Barra */}
+      {/* Contenido Principal de la Barra */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '8px 16px',
+        padding: '8px 24px',
         gap: '16px',
-        justify: 'space-between'
+        justify: 'space-between',
+        height: '56px',
+        boxSizing: 'border-box'
       }}>
-        {/* Controles + Tiempo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={onPrev} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px' }} title="Anterior">⏮</button>
-          <button onClick={togglePlay} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '22px' }} title={isPlaying ? "Pausa" : "Reproducir"}>
-            {isPlaying ? '⏸' : '▶'}
+        {/* Controles de Reproducción y Tiempo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={onPrev} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Anterior">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
           </button>
-          <button onClick={onNext} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px' }} title="Siguiente">⏭</button>
+          <button onClick={togglePlay} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title={isPlaying ? "Pausa" : "Reproducir"}>
+            {isPlaying ? (
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            )}
+          </button>
+          <button onClick={onNext} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Siguiente">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
           
-          <span style={{ color: '#AAA', fontSize: '13px', marginLeft: '8px' }}>
+          <span style={{ color: '#aaa', fontSize: '13px', fontFamily: 'sans-serif' }}>
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         </div>
 
-        {/* Información de la Canción */}
+        {/* Info de la Canción (Portada + Título + Artista) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center', maxWidth: '400px' }}>
           <img 
             src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} 
@@ -232,53 +276,69 @@ const ReproductorPersonalizado = ({
             style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} 
           />
           <div style={{ overflow: 'hidden' }}>
-            <h4 style={{ margin: 0, color: '#FFF', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <h4 style={{ margin: 0, color: '#f1f1f1', fontSize: '14px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {cancion.titulo || cancion.title || "Sin título"}
             </h4>
-            <p style={{ margin: '2px 0 0 0', color: '#AAA', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <p style={{ margin: '2px 0 0 0', color: '#aaa', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {cancion.artista || cancion.artist || "Artista desconocido"}
             </p>
           </div>
         </div>
 
-        {/* Reacciones y Opciones */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
+        {/* Reacciones Me Gusta / No Me Gusta y Menú */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
           <button
             onClick={handleToggleLike}
             style={{
               background: 'transparent',
               border: 'none',
-              color: meGusta ? '#3EA6FF' : '#FFF',
+              color: meGusta ? '#3ea6ff' : '#aaa',
               cursor: 'pointer',
-              fontSize: '18px',
+              padding: '6px 10px',
+              borderRadius: '18px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '6px',
+              transition: 'color 0.2s ease'
             }}
             title="Me gusta"
           >
-            👍 <span style={{ fontSize: '12px', color: '#AAA' }}>{totalLikes}</span>
+            <IconLike filled={meGusta} />
+            <span style={{ fontSize: '13px', fontWeight: '500', color: meGusta ? '#3ea6ff' : '#aaa' }}>
+              {totalLikes}
+            </span>
           </button>
 
           <button
             onClick={handleDislike}
-            style={{ background: 'transparent', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px' }}
-            title="No me gusta (Ocultar)"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: noMeGusta ? '#3ea6ff' : '#aaa',
+              cursor: 'pointer',
+              padding: '6px 10px',
+              borderRadius: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              transition: 'color 0.2s ease'
+            }}
+            title="No me gusta (Ocultar canción)"
           >
-            👎
+            <IconDislike filled={noMeGusta} />
           </button>
 
           <button 
             onClick={() => setMenuAbierto(!menuAbierto)}
-            style={{ backgroundColor: 'transparent', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px', padding: '4px' }}
+            style={{ backgroundColor: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', padding: '6px 8px', borderRadius: '50%', display: 'flex', alignItems: 'center' }}
+            title="Más opciones"
           >
-            ⋮
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
           </button>
 
           {menuAbierto && (
             <div style={{
-              position: 'absolute', bottom: '45px', right: 0, backgroundColor: '#18181c', border: '1px solid #2a2a30',
-              borderRadius: '12px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', zIndex: 1001
+              position: 'absolute', bottom: '48px', right: 0, backgroundColor: '#212121', border: '1px solid #383838',
+              borderRadius: '12px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)', zIndex: 1001
             }}>
               <button onClick={descargarCancion} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 📥 Descargar
