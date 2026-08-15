@@ -1,4 +1,4 @@
-export default function App() {
+import { useState, useEffect, useRef } from "react";
   const [session, setSession] = useState<any>(null);
   const [seccion, setSeccion] = useState<string>("descubrir");
   const [cancionActual, setCancionActual] = useState<any>(null);
