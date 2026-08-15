@@ -80,7 +80,7 @@ const ReproductorPersonalizado = ({
       style={{
         position: "fixed",
         bottom: 0,
-        left: "250px",
+        left: "260px",
         right: 0,
         backgroundColor: "#0c0c0e",
         borderTop: "1px solid #ff6b0033",
@@ -241,7 +241,8 @@ const ReproductorPersonalizado = ({
 // ==========================================
 export default function App() {
   const [session, setSession] = useState<any>(null);
-  const [seccion, setSeccion] = useState<string>("descubrir");
+  // Pestaña inicial para que abra directo en la vista de la captura
+  const [seccion, setSeccion] = useState<string>("subir");
 
   const [cancionActual, setCancionActual] = useState<any>(null);
   const [listaCanciones, setListaCanciones] = useState<any[]>([]);
@@ -312,45 +313,47 @@ export default function App() {
     return {
       display: "flex",
       alignItems: "center",
-      gap: "0.75rem",
-      padding: "0.75rem 1rem",
-      borderRadius: "12px",
-      border: isActive ? "1px solid #F97316" : "1px solid transparent",
-      backgroundColor: isActive ? "rgba(249, 115, 22, 0.08)" : "transparent",
-      color: isActive ? "#F97316" : "#A1A1AA",
+      gap: "0.85rem",
+      padding: "0.75rem 1.25rem",
+      borderRadius: "14px",
+      border: isActive ? "1.5px solid #ea580c" : "1px solid transparent",
+      backgroundColor: isActive ? "rgba(234, 88, 12, 0.12)" : "transparent",
+      color: isActive ? "#ea580c" : "#9ca3af",
       fontWeight: isActive ? "600" : "400",
       cursor: "pointer",
       textAlign: "left" as const,
       fontSize: "0.95rem",
-      transition: "all 0.2s ease",
+      width: "100%",
+      boxSizing: "border-box" as const,
     };
   };
 
   const userEmail = session?.user?.email || "ljosedaniel105@gmail.com";
   const userName = userEmail.split("@")[0];
 
-  const LOGO_URL = "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
+  const LOGO_URL =
+    "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
 
   return (
     <div
       style={{
         display: "flex",
         minHeight: "100vh",
-        backgroundColor: "#09090b",
+        backgroundColor: "#050505",
         color: "#FFF",
-        fontFamily: "system-ui, -apple-system, sans-serif",
+        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
-      {/* 🧭 SIDEBAR / MENÚ LATERAL */}
+      {/* 🧭 BARRA LATERAL */}
       <aside
         style={{
-          width: "250px",
-          backgroundColor: "#0d0d0f",
-          padding: "1.75rem 1.25rem",
+          width: "260px",
+          backgroundColor: "#000000",
+          padding: "2rem 1.25rem",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          borderRight: "1px solid #1c1c21",
+          borderRight: "1px solid #141414",
         }}
       >
         <div>
@@ -359,9 +362,9 @@ export default function App() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-              marginBottom: "2.5rem",
-              paddingLeft: "0.25rem",
+              gap: "12px",
+              marginBottom: "3rem",
+              paddingLeft: "0.5rem",
             }}
           >
             <img
@@ -371,10 +374,10 @@ export default function App() {
             />
             <h2
               style={{
-                fontSize: "1.1rem",
-                fontWeight: "800",
+                fontSize: "1.05rem",
+                fontWeight: "900",
                 color: "#FFFFFF",
-                letterSpacing: "0.5px",
+                letterSpacing: "1px",
                 margin: 0,
               }}
             >
@@ -382,40 +385,40 @@ export default function App() {
             </h2>
           </div>
 
-          {/* Menú de Opciones */}
-          <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          {/* Opciones de Navegación */}
+          <nav style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
             <button onClick={() => setSeccion("descubrir")} style={getBtnStyle("descubrir")}>
-              🏠 Descubrir
+              <span style={{ fontSize: "1.1rem" }}>🏠</span> Descubrir
             </button>
 
             <button onClick={() => setSeccion("playlists")} style={getBtnStyle("playlists")}>
-              📑 Mis Playlists
+              <span style={{ fontSize: "1.1rem" }}>📑</span> Mis Playlists
             </button>
 
             <button onClick={() => setSeccion("subir")} style={getBtnStyle("subir")}>
-              📤 Subir Música
+              <span style={{ fontSize: "1.1rem" }}>📤</span> Subir Música
             </button>
 
             <button onClick={() => setSeccion("admin")} style={getBtnStyle("admin")}>
-              🛡️ Admin Panel
+              <span style={{ fontSize: "1.1rem" }}>🛡️</span> Admin Panel
             </button>
           </nav>
         </div>
 
-        {/* Sección de Perfil y Logout */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {/* Información del Usuario y Logout */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "0 0.5rem" }}>
             <div
               style={{
-                width: "36px",
-                height: "36px",
+                width: "38px",
+                height: "38px",
                 borderRadius: "50%",
-                backgroundColor: "#8b5cf6",
+                backgroundColor: "#a855f7",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#FFF",
-                fontWeight: "bold",
+                fontSize: "0.9rem",
               }}
             >
               👤
@@ -424,7 +427,7 @@ export default function App() {
               <div
                 style={{
                   fontSize: "0.85rem",
-                  fontWeight: "bold",
+                  fontWeight: "700",
                   color: "#FFF",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -436,7 +439,7 @@ export default function App() {
               <div
                 style={{
                   fontSize: "0.75rem",
-                  color: "#71717a",
+                  color: "#6b7280",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -452,18 +455,19 @@ export default function App() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.75rem 1rem",
-              borderRadius: "10px",
+              gap: "0.6rem",
+              padding: "0.75rem 1.25rem",
+              borderRadius: "14px",
               border: "1px solid #3f1d1d",
-              backgroundColor: "rgba(127, 29, 29, 0.2)",
+              backgroundColor: "#160a0a",
               color: "#ef4444",
               fontWeight: "600",
               fontSize: "0.85rem",
               cursor: "pointer",
+              width: "100%",
             }}
           >
-            ↪ Cerrar Sesión
+            <span>↳</span> Cerrar Sesión
           </button>
         </div>
       </aside>
@@ -485,15 +489,16 @@ export default function App() {
         )}
 
         {seccion === "subir" && (
-          <div style={{ maxWidth: "650px", margin: "2rem auto", padding: "0 1rem" }}>
+          <div style={{ maxWidth: "620px", margin: "2.5rem auto", padding: "0 1.5rem" }}>
             <h2
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "8px",
-                color: "#F97316",
-                fontSize: "1.4rem",
+                gap: "10px",
+                color: "#ea580c",
+                fontSize: "1.35rem",
+                fontWeight: "700",
                 marginBottom: "2rem",
               }}
             >
@@ -503,17 +508,24 @@ export default function App() {
             <form
               onSubmit={(e) => e.preventDefault()}
               style={{
-                backgroundColor: "#121215",
-                padding: "2rem",
-                borderRadius: "12px",
-                border: "1px solid #222",
+                backgroundColor: "#0d0d0d",
+                padding: "2.25rem",
+                borderRadius: "16px",
+                border: "1px solid #1a1a1a",
                 display: "flex",
                 flexDirection: "column",
                 gap: "1.5rem",
               }}
             >
               <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.6rem",
+                    fontSize: "0.9rem",
+                    color: "#d1d5db",
+                  }}
+                >
                   Título de la Canción:
                 </label>
                 <input
@@ -523,12 +535,14 @@ export default function App() {
                   onChange={(e) => setTitulo(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "0.75rem",
-                    borderRadius: "8px",
-                    border: "1px solid #27272a",
-                    backgroundColor: "#09090b",
+                    padding: "0.85rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #262626",
+                    backgroundColor: "#050505",
                     color: "#fff",
                     boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "0.9rem",
                   }}
                 />
               </div>
@@ -538,11 +552,19 @@ export default function App() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    marginBottom: "0.5rem",
+                    alignItems: "center",
+                    marginBottom: "0.6rem",
                   }}
                 >
-                  <label style={{ fontSize: "0.9rem" }}>Género Musical:</label>
-                  <span style={{ color: "#F97316", fontSize: "0.8rem", cursor: "pointer" }}>
+                  <label style={{ fontSize: "0.9rem", color: "#d1d5db" }}>Género Musical:</label>
+                  <span
+                    style={{
+                      color: "#ea580c",
+                      fontSize: "0.82rem",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                    }}
+                  >
                     + Agregar nuevo género
                   </span>
                 </div>
@@ -551,12 +573,14 @@ export default function App() {
                   onChange={(e) => setGenero(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "0.75rem",
-                    borderRadius: "8px",
-                    border: "1px solid #27272a",
-                    backgroundColor: "#09090b",
+                    padding: "0.85rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #262626",
+                    backgroundColor: "#050505",
                     color: "#fff",
                     boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "0.9rem",
                   }}
                 >
                   <option value="">-- Selecciona un género --</option>
@@ -571,11 +595,19 @@ export default function App() {
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    marginBottom: "0.5rem",
+                    alignItems: "center",
+                    marginBottom: "0.6rem",
                   }}
                 >
-                  <label style={{ fontSize: "0.9rem" }}>Artista / Banda:</label>
-                  <span style={{ color: "#F97316", fontSize: "0.8rem", cursor: "pointer" }}>
+                  <label style={{ fontSize: "0.9rem", color: "#d1d5db" }}>Artista / Banda:</label>
+                  <span
+                    style={{
+                      color: "#ea580c",
+                      fontSize: "0.82rem",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                    }}
+                  >
                     + Agregar nuevo artista
                   </span>
                 </div>
@@ -584,12 +616,14 @@ export default function App() {
                   onChange={(e) => setArtista(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "0.75rem",
-                    borderRadius: "8px",
-                    border: "1px solid #27272a",
-                    backgroundColor: "#09090b",
+                    padding: "0.85rem 1rem",
+                    borderRadius: "10px",
+                    border: "1px solid #262626",
+                    backgroundColor: "#050505",
                     color: "#fff",
                     boxSizing: "border-box",
+                    outline: "none",
+                    fontSize: "0.9rem",
                   }}
                 >
                   <option value="">-- Selecciona un artista --</option>
@@ -599,57 +633,84 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.6rem",
+                    fontSize: "0.9rem",
+                    color: "#d1d5db",
+                  }}
+                >
                   🎵 Seleccionar MP3:
                 </label>
-                <input
-                  type="file"
-                  accept="audio/*"
-                  onChange={(e) => setArchivoMp3(e.target.files?.[0] || null)}
+                <div
                   style={{
-                    width: "100%",
-                    padding: "0.5rem",
-                    borderRadius: "8px",
-                    border: "1px solid #27272a",
-                    backgroundColor: "#09090b",
-                    color: "#fff",
-                    boxSizing: "border-box",
+                    backgroundColor: "#050505",
+                    border: "1px solid #262626",
+                    borderRadius: "10px",
+                    padding: "0.5rem 0.75rem",
                   }}
-                />
+                >
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) => setArchivoMp3(e.target.files?.[0] || null)}
+                    style={{
+                      width: "100%",
+                      color: "#9ca3af",
+                      fontSize: "0.85rem",
+                      cursor: "pointer",
+                    }}
+                  />
+                </div>
               </div>
 
               <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "0.6rem",
+                    fontSize: "0.9rem",
+                    color: "#d1d5db",
+                  }}
+                >
                   🖼️ Imagen de Portada (Opcional):
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setArchivoPortada(e.target.files?.[0] || null)}
+                <div
                   style={{
-                    width: "100%",
-                    padding: "0.5rem",
-                    borderRadius: "8px",
-                    border: "1px solid #27272a",
-                    backgroundColor: "#09090b",
-                    color: "#fff",
-                    boxSizing: "border-box",
+                    backgroundColor: "#050505",
+                    border: "1px solid #262626",
+                    borderRadius: "10px",
+                    padding: "0.5rem 0.75rem",
                   }}
-                />
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setArchivoPortada(e.target.files?.[0] || null)}
+                    style={{
+                      width: "100%",
+                      color: "#9ca3af",
+                      fontSize: "0.85rem",
+                      cursor: "pointer",
+                    }}
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
                 style={{
-                  padding: "0.85rem",
-                  borderRadius: "10px",
+                  padding: "0.9rem",
+                  borderRadius: "12px",
                   border: "none",
-                  backgroundColor: "#F97316",
+                  backgroundColor: "#ea580c",
                   color: "#FFF",
                   fontWeight: "bold",
                   fontSize: "1rem",
                   cursor: "pointer",
-                  marginTop: "1rem",
+                  marginTop: "0.75rem",
+                  transition: "background-color 0.2s",
                 }}
               >
                 Guardar Canción 🚀
