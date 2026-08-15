@@ -109,3 +109,17 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+/* Quita el desplazamiento horizontal y permite el desplazamiento vertical */
+html, body, #root {
+  width: 100vw;
+  max-width: 100%;
+  overflow-x: hidden !important;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+main, div[class*="main"], div[class*="content"] {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
