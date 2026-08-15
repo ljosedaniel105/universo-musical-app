@@ -1,145 +1,120 @@
-import React, { useState } from 'react';
-
-export interface Cancion {
-  id?: string | number;
-  titulo?: string;
-  artista?: string;
-  genero?: string;
-  portada_url?: string;
-  portadaUrl?: string;
-  audio_url?: string;
-  audioUrl?: string;
-  likes?: number;
-}
+import { useState, useEffect } from "react";
+import { supabase } from "./supabase";
 
 interface ListaCancionesProps {
-  canciones?: Cancion[];
+  userId?: string;
+  onPlaySong: (cancion: any, lista: any[]) => void;
 }
 
-export default function ListaCanciones({ canciones = [] }: ListaCancionesProps) {
-  const [likesCount, setLikesCount] = useState<{ [key: string | number]: number }>({});
+export default function ListaCanciones({ userId, onPlaySong }: ListaCancionesProps) {
+  const [canciones, setCanciones] = useState<any[]>([]);
+  const [cargando, setCargando] = useState(true);
 
-  const handleLike = (id: string | number) => {
-    setLikesCount((prev) => ({
-      ...prev,
-      [id]: (prev[id] || 0) + 1
-    }));
-  };
+  useEffect(() => {
+    const fetchCanciones = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("canciones")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Error al obtener canciones:", error);
+        } else {
+          setCanciones(data || []);
+        }
+      } catch (err) {
+        console.error("Error inesperado:", err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    fetchCanciones();
+  }, [userId]);
+
+  if (cargando) {
+    return (
+      <div style={{ padding: "2rem", color: "#888" }}>
+        Cargando lista de canciones...
+      </div>
+    );
+  }
 
   if (canciones.length === 0) {
     return (
-      <div style={{ padding: '20px', backgroundColor: '#14151e', borderRadius: '12px', color: '#aaa', textAlign: 'center' }}>
-        No hay canciones registradas en la base de datos.
+      <div style={{ padding: "2rem", color: "#888" }}>
+        No hay canciones disponibles aún.
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ padding: "2rem" }}>
+      <h2 style={{ marginBottom: "1.5rem", color: "#FFF" }}>Canciones Disponibles</h2>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
-          gap: '20px',
-          width: '100%',
-          boxSizing: 'border-box'
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+          gap: "1.5rem",
         }}
       >
-        {canciones.map((cancion, index) => {
-          const id = cancion.id || index;
-          const imagen = cancion.portada_url || cancion.portadaUrl;
-          const titulo = cancion.titulo || 'Sin título';
-          const artista = cancion.artista || 'Artista desconocido';
-          const numLikes = likesCount[id] || cancion.likes || 0;
-
-          return (
-            <div
-              key={id}
+        {canciones.map((song) => (
+          <div
+            key={song.id}
+            onClick={() => onPlaySong(song, canciones)}
+            style={{
+              backgroundColor: "#18181b",
+              borderRadius: "12px",
+              padding: "1rem",
+              cursor: "pointer",
+              transition: "transform 0.2s, background-color 0.2s",
+              border: "1px solid #27272a",
+            }}
+          >
+            <img
+              src={
+                song.portada_url ||
+                song.url_portada ||
+                song.portada ||
+                "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500"
+              }
+              alt={song.titulo}
               style={{
-                backgroundColor: '#14151f',
-                borderRadius: '16px',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                border: '1px solid #1f212d',
-                boxSizing: 'border-box'
+                width: "100%",
+                height: "160px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                marginBottom: "0.75rem",
+              }}
+            />
+            <h3
+              style={{
+                fontSize: "0.95rem",
+                fontWeight: "bold",
+                color: "#FFF",
+                margin: "0 0 0.25rem 0",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
-              {/* RECUADRO NEGRO LIMPIO PARA LA PORTADA */}
-              <div
-                style={{
-                  width: '100%',
-                  height: '200px',
-                  borderRadius: '12px',
-                  backgroundColor: '#0a0a0f',
-                  overflow: 'hidden',
-                  marginBottom: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                {imagen && imagen.trim() !== '' ? (
-                  <img
-                    src={imagen}
-                    alt={titulo}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : null}
-              </div>
-
-              {/* TÍTULO Y ARTISTA */}
-              <h3 style={{ color: '#fff', fontSize: '16px', margin: '0 0 4px 0', textAlign: 'center', fontWeight: 'bold' }}>
-                {titulo}
-              </h3>
-
-              <p style={{ color: '#8b8e9b', fontSize: '13px', margin: '0 0 12px 0', textAlign: 'center' }}>
-                {artista}
-              </p>
-
-              {/* GÉNERO */}
-              {cancion.genero && (
-                <span
-                  style={{
-                    alignSelf: 'center',
-                    backgroundColor: '#1f212e',
-                    color: '#ff5500',
-                    padding: '4px 14px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    marginBottom: '14px'
-                  }}
-                >
-                  {cancion.genero}
-                </span>
-              )}
-
-              {/* BOTÓN "ME GUSTA" CON BORDE NARANJA Y FONDO TRANSPARENTE */}
-              <button
-                onClick={() => handleLike(id)}
-                style={{
-                  width: '100%',
-                  padding: '10px 16px',
-                  backgroundColor: 'transparent',
-                  color: '#ff3333',
-                  border: '1px solid #ff5500',
-                  borderRadius: '24px',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  marginTop: 'auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                ❤️ Me gusta ({numLikes})
-              </button>
-            </div>
-          );
-        })}
+              {song.titulo || song.title || "Sin título"}
+            </h3>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "#F97316",
+                margin: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {song.artista || song.artist || "Artista desconocido"}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
