@@ -80,15 +80,14 @@ export default function ListaCanciones({
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        padding: "1.5rem",
+        padding: "1rem",
         boxSizing: "border-box",
         color: "#FFF"
       }}
     >
-      {/* Estilos para que la barra horizontal de géneros sea de 10px de grosor y fácil de mover */}
       <style>{`
         .generos-container::-webkit-scrollbar {
-          height: 10px !important;
+          height: 8px !important;
         }
         .generos-container::-webkit-scrollbar-track {
           background: #121212 !important;
@@ -98,13 +97,16 @@ export default function ListaCanciones({
           background: #3f3f46 !important;
           border-radius: 6px;
         }
-        .generos-container::-webkit-scrollbar-thumb:hover {
-          background: #52525b !important;
+        @media (max-width: 768px) {
+          .songs-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+            gap: 0.8rem !important;
+          }
         }
       `}</style>
 
       {/* 🔍 BUSCADOR DE CANCIONES */}
-      <div style={{ marginBottom: "1.5rem", maxWidth: "400px", width: "100%" }}>
+      <div style={{ marginBottom: "1rem", maxWidth: "400px", width: "100%" }}>
         <input
           type="text"
           placeholder="🔍 Buscar por canción o artista..."
@@ -125,19 +127,19 @@ export default function ListaCanciones({
       </div>
 
       {/* Encabezado */}
-      <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", textAlign: "left", marginBottom: "1.5rem" }}>
+      <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", textAlign: "left", marginBottom: "1rem" }}>
         🌎 Todas las Canciones
       </h1>
 
-      {/* 🏷️ PESTAÑAS DE GÉNEROS CON BARRA MÁS FÁCIL DE ARRASTRAR */}
+      {/* 🏷️ PESTAÑAS DE GÉNEROS */}
       <div
         className="generos-container"
         style={{
           display: "flex",
-          gap: "0.75rem",
+          gap: "0.5rem",
           overflowX: "auto",
-          paddingBottom: "0.75rem",
-          marginBottom: "1.5rem",
+          paddingBottom: "0.5rem",
+          marginBottom: "1.2rem",
           width: "100%",
           boxSizing: "border-box"
         }}
@@ -145,7 +147,7 @@ export default function ListaCanciones({
         <button
           onClick={() => setSelectedGenero("Todos")}
           style={{
-            padding: "0.5rem 1.25rem",
+            padding: "0.4rem 1rem",
             borderRadius: "20px",
             border: selectedGenero === "Todos" ? "none" : "1px solid #333",
             backgroundColor: selectedGenero === "Todos" ? "#F97316" : "#171717",
@@ -166,7 +168,7 @@ export default function ListaCanciones({
               key={g.id || g.nombre}
               onClick={() => setSelectedGenero(g.nombre)}
               style={{
-                padding: "0.5rem 1.25rem",
+                padding: "0.4rem 1rem",
                 borderRadius: "20px",
                 border: isActive ? "none" : "1px solid #333",
                 backgroundColor: isActive ? "#F97316" : "#171717",
@@ -192,10 +194,11 @@ export default function ListaCanciones({
         </p>
       ) : (
         <div
+          className="songs-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-            gap: "1.5rem",
+            gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))",
+            gap: "1.2rem",
             width: "100%",
             boxSizing: "border-box"
           }}
@@ -211,7 +214,7 @@ export default function ListaCanciones({
                 style={{
                   backgroundColor: "#171717",
                   borderRadius: "12px",
-                  padding: "1rem",
+                  padding: "0.8rem",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -224,25 +227,25 @@ export default function ListaCanciones({
                   alt={song.titulo || song.title}
                   style={{
                     width: "100%",
-                    height: "150px",
+                    height: "130px",
                     objectFit: "cover",
                     borderRadius: "8px",
-                    marginBottom: "0.75rem"
+                    marginBottom: "0.5rem"
                   }}
                 />
-                <h3 style={{ fontSize: "1rem", fontWeight: "bold", margin: "0 0 0.25rem 0", color: "#FFF" }}>
+                <h3 style={{ fontSize: "0.95rem", fontWeight: "bold", margin: "0 0 0.2rem 0", color: "#FFF" }}>
                   {song.titulo || song.title || "Sin título"}
                 </h3>
-                <p style={{ fontSize: "0.85rem", color: "#AAA", margin: "0 0 0.5rem 0" }}>
+                <p style={{ fontSize: "0.8rem", color: "#AAA", margin: "0 0 0.4rem 0" }}>
                   {song.artista || song.artist || "Artista desconocido"}
                 </p>
-                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem" }}>
+                <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginBottom: "0.6rem" }}>
                   {song.genero && (
-                    <span style={{ fontSize: "0.75rem", backgroundColor: "#262626", color: "#F97316", padding: "0.2rem 0.5rem", borderRadius: "10px" }}>
+                    <span style={{ fontSize: "0.7rem", backgroundColor: "#262626", color: "#F97316", padding: "0.2rem 0.4rem", borderRadius: "8px" }}>
                       {song.genero}
                     </span>
                   )}
-                  <span style={{ fontSize: "0.75rem", color: "#AAA" }}>
+                  <span style={{ fontSize: "0.7rem", color: "#AAA" }}>
                     👍 {totalLikes}
                   </span>
                 </div>
@@ -250,17 +253,18 @@ export default function ListaCanciones({
                   onClick={() => onPlay && onPlay(song, filteredSongs)}
                   style={{
                     width: "100%",
-                    padding: "0.6rem",
+                    padding: "0.5rem",
                     borderRadius: "20px",
                     border: "none",
                     backgroundColor: "#F97316",
                     color: "#FFF",
                     fontWeight: "bold",
+                    fontSize: "0.85rem",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "0.5rem"
+                    gap: "0.4rem"
                   }}
                 >
                   ► Escuchar
