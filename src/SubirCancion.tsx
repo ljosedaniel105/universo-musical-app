@@ -9,56 +9,91 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
   const [titulo, setTitulo] = useState('');
   const [artista, setArtista] = useState('');
   const [genero, setGenero] = useState('');
-  const [portadaUrl, setPortadaUrl] = useState('');
+  const [archivoPortada, setArchivoPortada] = useState<File | null>(null);
+  const [archivoAudio, setArchivoAudio] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!titulo || !artista) {
-      alert("Por favor ingresa al menos el Título y el Artista.");
+      alert("Por favor completa el título y el artista.");
       return;
     }
 
     setSubiendo(true);
 
     try {
+      let portadaUrl = '';
+      let audioUrl = '';
+
+      // Subir imagen a Supabase Storage si seleccionaste un archivo
+      if (archivoPortada) {
+        const nombrePortada = `${Date.now()}_${archivoPortada.name}`;
+        const { error: errorPortada } = await supabase.storage
+          .from('canciones')
+          .upload(`portadas/${nombrePortada}`, archivoPortada);
+
+        if (!errorPortada) {
+          const { data } = supabase.storage
+            .from('canciones')
+            .getPublicUrl(`portadas/${nombrePortada}`);
+          portadaUrl = data.publicUrl;
+        }
+      }
+
+      // Subir archivo de audio si seleccionaste uno
+      if (archivoAudio) {
+        const nombreAudio = `${Date.now()}_${archivoAudio.name}`;
+        const { error: errorAudio } = await supabase.storage
+          .from('canciones')
+          .upload(`audios/${nombreAudio}`, archivoAudio);
+
+        if (!errorAudio) {
+          const { data } = supabase.storage
+            .from('canciones')
+            .getPublicUrl(`audios/${nombreAudio}`);
+          audioUrl = data.publicUrl;
+        }
+      }
+
       const { error } = await supabase.from('canciones').insert([
         {
-          titulo: titulo,
-          artista: artista,
-          genero: genero,
-          portada_url: portadaUrl
+          titulo,
+          artista,
+          genero,
+          portada_url: portadaUrl,
+          audio_url: audioUrl
         }
       ]);
 
       if (error) throw error;
 
-      alert("¡Canción subida exitosamente!");
+      alert("¡Canción subida con éxito!");
 
-      // RESET COMPLETO DE LOS CAMPOS DE TEXTO
+      // Limpiar el formulario por completo
       setTitulo('');
       setArtista('');
       setGenero('');
-      setPortadaUrl('');
+      setArchivoPortada(null);
+      setArchivoAudio(null);
 
       if (alSubirExitoso) {
         alSubirExitoso();
       }
-
     } catch (err: any) {
       console.error('Error al subir canción:', err);
-      alert('Error al guardar en Supabase: ' + (err.message || err));
+      alert('Error al guardar la canción: ' + (err.message || err));
     } finally {
       setSubiendo(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto', color: '#fff', backgroundColor: '#141419', padding: '25px', borderRadius: '12px', border: '1px solid #22222a' }}>
-      <h2 style={{ color: '#ff6600', textAlign: 'center', marginTop: 0, marginBottom: '25px' }}>Subir Nueva Canción</h2>
+    <div style={{ maxWidth: '520px', margin: '0 auto', color: '#fff', backgroundColor: '#141419', padding: '25px', borderRadius: '12px', border: '1px solid #22222a' }}>
+      <h2 style={{ color: '#ff6600', textAlign: 'center', marginTop: 0, marginBottom: '20px' }}>Subir Nueva Canción</h2>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
           <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Título (*):</label>
           <input
@@ -74,7 +109,6 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               border: '1px solid #33333f',
               backgroundColor: '#0d0d11',
               color: '#fff',
-              fontSize: '14px',
               boxSizing: 'border-box'
             }}
           />
@@ -95,7 +129,6 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               border: '1px solid #33333f',
               backgroundColor: '#0d0d11',
               color: '#fff',
-              fontSize: '14px',
               boxSizing: 'border-box'
             }}
           />
@@ -107,7 +140,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
             type="text"
             value={genero}
             onChange={(e) => setGenero(e.target.value)}
-            placeholder="Ej. Bachata, Pop, Rock..."
+            placeholder="Ej. Bachata, Pop, Salsa..."
             style={{
               width: '100%',
               padding: '12px',
@@ -115,27 +148,42 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
               border: '1px solid #33333f',
               backgroundColor: '#0d0d11',
               color: '#fff',
-              fontSize: '14px',
               boxSizing: 'border-box'
             }}
           />
         </div>
 
         <div>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>URL de Portada:</label>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Imagen de Portada (Archivo):</label>
           <input
-            type="text"
-            value={portadaUrl}
-            onChange={(e) => setPortadaUrl(e.target.value)}
-            placeholder="https://imagen.com/portada.jpg"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setArchivoPortada(e.target.files ? e.target.files[0] : null)}
             style={{
               width: '100%',
-              padding: '12px',
+              padding: '10px',
               borderRadius: '8px',
               border: '1px solid #33333f',
               backgroundColor: '#0d0d11',
               color: '#fff',
-              fontSize: '14px',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: '#ccc' }}>Archivo de Audio (MP3/WAV):</label>
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={(e) => setArchivoAudio(e.target.files ? e.target.files[0] : null)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '8px',
+              border: '1px solid #33333f',
+              backgroundColor: '#0d0d11',
+              color: '#fff',
               boxSizing: 'border-box'
             }}
           />
@@ -156,7 +204,7 @@ export default function SubirCancion({ alSubirExitoso }: SubirCancionProps) {
             marginTop: '10px'
           }}
         >
-          {subiendo ? 'Guardando en la base de datos...' : 'Subir Canción'}
+          {subiendo ? 'Subiendo archivos...' : 'Subir Canción'}
         </button>
       </form>
     </div>
