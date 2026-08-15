@@ -46,6 +46,26 @@ body::-webkit-scrollbar-thumb:hover,
 
 /* Soporte para Firefox */
 html, body, * {
+  /* Media query para pantallas móviles (menos de 768px) */
+@media (max-width: 768px) {
+  /* Si el contenedor principal usa flex, permite que la vista ocupe todo el ancho */
+  body, #root {
+    overflow-x: hidden;
+  }
+
+  /* Ajuste de contenedor lateral si utiliza etiquetas <aside> o clases específicas */
+  aside, .sidebar {
+    position: fixed !important;
+    left: -100% !important; /* Oculta la barra lateral fuera de la pantalla */
+    transition: left 0.3s ease;
+    z-index: 1000;
+  }
+
+  /* Clase para mostrar la barra lateral cuando se presione un botón de menú */
+  aside.open, .sidebar.open {
+    left: 0 !important;
+  }
+}
   scrollbar-width: thin !important;
   scrollbar-color: #3f3f46 #121212 !important;
 }
