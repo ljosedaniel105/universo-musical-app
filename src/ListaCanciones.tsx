@@ -24,18 +24,15 @@ export default function ListaCanciones({
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Cargar todas las canciones
       const { data: songsData } = await supabase.from("canciones").select("*");
       if (songsData) setSongs(songsData);
 
-      // 2. Cargar géneros
       const { data: generosData } = await supabase
         .from("generos")
         .select("*")
         .order("nombre", { ascending: true });
       if (generosData) setGeneros(generosData);
 
-      // 3. Cargar las canciones ocultadas por este usuario ("No Me Gusta")
       if (userId) {
         const { data: dislikeData } = await supabase
           .from("no_me_gusta")
@@ -47,7 +44,6 @@ export default function ListaCanciones({
         }
       }
 
-      // 4. Contar total de "Me Gusta" por canción
       const { data: likesData } = await supabase.from("me_gusta").select("cancion_id");
       if (likesData) {
         const counts: { [key: string]: number } = {};
@@ -63,7 +59,6 @@ export default function ListaCanciones({
     }
   };
 
-  // Filtrado de canciones (Excluye las que tienen "No Me Gusta")
   const filteredSongs = songs.filter((song) => {
     if (dislikedIds.includes(song.id)) return false;
 
@@ -85,12 +80,9 @@ export default function ListaCanciones({
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        maxWidth: "100%",
-        minWidth: "0",
         padding: "1.5rem",
         boxSizing: "border-box",
-        color: "#FFF",
-        overflowX: "hidden"
+        color: "#FFF"
       }}
     >
       {/* 🔍 BUSCADOR DE CANCIONES */}
@@ -116,7 +108,7 @@ export default function ListaCanciones({
 
       {/* Encabezado */}
       <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", textAlign: "left", marginBottom: "1.5rem" }}>
-        🌍 Todas las Canciones
+        🌍 Todas las Canciones ({filteredSongs.length})
       </h1>
 
       {/* 🏷️ PESTAÑAS DE GÉNEROS */}
@@ -128,8 +120,6 @@ export default function ListaCanciones({
           paddingBottom: "0.75rem",
           marginBottom: "1.5rem",
           width: "100%",
-          maxWidth: "100%",
-          minWidth: "0",
           boxSizing: "border-box"
         }}
       >
@@ -174,7 +164,7 @@ export default function ListaCanciones({
         })}
       </div>
 
-      {/* 🎵 GRILLA DE TARJETAS */}
+      {/* 🎵 GRILLA ADAPTATIVA PARA SCROLL VERTICAL */}
       {loading ? (
         <p style={{ color: "#AAA", textAlign: "center" }}>Cargando canciones...</p>
       ) : filteredSongs.length === 0 ? (
@@ -185,7 +175,7 @@ export default function ListaCanciones({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
             gap: "1.5rem",
             width: "100%",
             boxSizing: "border-box"
@@ -215,7 +205,7 @@ export default function ListaCanciones({
                   alt={song.titulo || song.title}
                   style={{
                     width: "100%",
-                    height: "160px",
+                    height: "150px",
                     objectFit: "cover",
                     borderRadius: "8px",
                     marginBottom: "0.75rem"
