@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+// @ts-ignore
 import { supabase } from "./supabase";
 
 export default function SubirCancion() {
   const [titulo, setTitulo] = useState("");
-  
+
   // Géneros
   const [generos, setGeneros] = useState<any[]>([]);
   const [generoSeleccionado, setGeneroSeleccionado] = useState("");
@@ -23,8 +24,14 @@ export default function SubirCancion() {
 
   // Cargar lista de Géneros y Artistas existentes
   const cargarCatalogos = async () => {
-    const { data: dataGeneros } = await supabase.from("generos").select("*").order("nombre", { ascending: true });
-    const { data: dataArtistas } = await supabase.from("artistas").select("*").order("nombre", { ascending: true });
+    const { data: dataGeneros } = await supabase
+      .from("generos")
+      .select("*")
+      .order("nombre", { ascending: true });
+    const { data: dataArtistas } = await supabase
+      .from("artistas")
+      .select("*")
+      .order("nombre", { ascending: true });
 
     if (dataGeneros) setGeneros(dataGeneros);
     if (dataArtistas) setArtistas(dataArtistas);
@@ -41,7 +48,6 @@ export default function SubirCancion() {
     const generoLimpio = nuevoGenero.trim();
     if (!generoLimpio) return "";
 
-    // Buscar si ya existe (sin importar mayúsculas/minúsculas)
     const { data: existe } = await supabase
       .from("generos")
       .select("nombre")
@@ -49,10 +55,9 @@ export default function SubirCancion() {
       .maybeSingle();
 
     if (existe) {
-      return existe.nombre; // Usa el que ya existía
+      return existe.nombre;
     }
 
-    // Si no existe, lo inserta
     const { data: creado } = await supabase
       .from("generos")
       .insert([{ nombre: generoLimpio }])
@@ -69,7 +74,6 @@ export default function SubirCancion() {
     const artistaLimpio = nuevoArtista.trim();
     if (!artistaLimpio) return "";
 
-    // Buscar si ya existe
     const { data: existe } = await supabase
       .from("artistas")
       .select("nombre")
@@ -80,7 +84,6 @@ export default function SubirCancion() {
       return existe.nombre;
     }
 
-    // Si no existe, lo inserta
     const { data: creado } = await supabase
       .from("artistas")
       .insert([{ nombre: artistaLimpio }])
@@ -112,18 +115,26 @@ export default function SubirCancion() {
 
       // 2. Subir Audio a Storage
       const nombreAudio = `${Date.now()}_${archivoAudio.name}`;
-      const { error: errAudio } = await supabase.storage.from("canciones").upload(nombreAudio, archivoAudio);
+      const { error: errAudio } = await supabase.storage
+        .from("canciones")
+        .upload(nombreAudio, archivoAudio);
       if (errAudio) throw errAudio;
 
-      const { data: urlAudioData } = supabase.storage.from("canciones").getPublicUrl(nombreAudio);
+      const { data: urlAudioData } = supabase.storage
+        .from("canciones")
+        .getPublicUrl(nombreAudio);
 
       // 3. Subir Portada a Storage (Opcional)
       let urlPortada = "";
       if (archivoPortada) {
         const nombrePortada = `${Date.now()}_${archivoPortada.name}`;
-        const { error: errPortada } = await supabase.storage.from("portadas").upload(nombrePortada, archivoPortada);
+        const { error: errPortada } = await supabase.storage
+          .from("portadas")
+          .upload(nombrePortada, archivoPortada);
         if (!errPortada) {
-          const { data: urlPortadaData } = supabase.storage.from("portadas").getPublicUrl(nombrePortada);
+          const { data: urlPortadaData } = supabase.storage
+            .from("portadas")
+            .getPublicUrl(nombrePortada);
           urlPortada = urlPortadaData.publicUrl;
         }
       }
@@ -142,7 +153,7 @@ export default function SubirCancion() {
       if (errCancion) throw errCancion;
 
       alert("¡Canción guardada con éxito! 🚀");
-      
+
       // Limpiar Formulario
       setTitulo("");
       setGeneroSeleccionado("");
@@ -154,7 +165,6 @@ export default function SubirCancion() {
       setArchivoAudio(null);
       setArchivoPortada(null);
       cargarCatalogos();
-
     } catch (error: any) {
       alert("Error al guardar canción: " + error.message);
     } finally {
@@ -163,13 +173,36 @@ export default function SubirCancion() {
   };
 
   return (
-    <div style={{ maxWidth: "550px", margin: "2rem auto", padding: "2rem", backgroundColor: "#121212", borderRadius: "16px", border: "1px solid #262626", color: "#FFFFFF", fontFamily: "sans-serif" }}>
-      <h2 style={{ textAlign: "center", marginBottom: "1.5rem", color: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+    <div
+      style={{
+        maxWidth: "550px",
+        margin: "2rem auto",
+        padding: "2rem",
+        backgroundColor: "#121212",
+        borderRadius: "16px",
+        border: "1px solid #262626",
+        color: "#FFFFFF",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <h2
+        style={{
+          textAlign: "center",
+          marginBottom: "1.5rem",
+          color: "#F97316",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "0.5rem",
+        }}
+      >
         📁 Subir Nueva Canción
       </h2>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-        
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+      >
         {/* Título */}
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", textAlign: "left" }}>
           <label style={{ fontSize: "0.9rem", color: "#A1A1AA" }}>Título de la Canción:</label>
@@ -179,7 +212,14 @@ export default function SubirCancion() {
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             placeholder="Ej. Ojitos Lindos"
-            style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", fontSize: "0.95rem" }}
+            style={{
+              padding: "0.75rem",
+              borderRadius: "8px",
+              border: "1px solid #333",
+              backgroundColor: "#0A0A0A",
+              color: "#FFF",
+              fontSize: "0.95rem",
+            }}
           />
         </div>
 
@@ -189,8 +229,19 @@ export default function SubirCancion() {
             <label style={{ fontSize: "0.9rem", color: "#A1A1AA" }}>Género Musical:</label>
             <button
               type="button"
-              onClick={() => { setModoCrearGenero(!modoCrearGenero); setGeneroSeleccionado(""); setNuevoGenero(""); }}
-              style={{ background: "none", border: "none", color: "#F97316", fontSize: "0.8rem", cursor: "pointer", textDecoration: "underline" }}
+              onClick={() => {
+                setModoCrearGenero(!modoCrearGenero);
+                setGeneroSeleccionado("");
+                setNuevoGenero("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#F97316",
+                fontSize: "0.8rem",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
             >
               {modoCrearGenero ? "← Seleccionar existente" : "+ Agregar nuevo género"}
             </button>
@@ -201,11 +252,20 @@ export default function SubirCancion() {
               value={generoSeleccionado}
               onChange={(e) => setGeneroSeleccionado(e.target.value)}
               required
-              style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", fontSize: "0.95rem" }}
+              style={{
+                padding: "0.75rem",
+                borderRadius: "8px",
+                border: "1px solid #333",
+                backgroundColor: "#0A0A0A",
+                color: "#FFF",
+                fontSize: "0.95rem",
+              }}
             >
               <option value="">-- Selecciona un género --</option>
               {generos.map((g) => (
-                <option key={g.id} value={g.nombre}>{g.nombre}</option>
+                <option key={g.id} value={g.nombre}>
+                  {g.nombre}
+                </option>
               ))}
             </select>
           ) : (
@@ -215,7 +275,14 @@ export default function SubirCancion() {
               value={nuevoGenero}
               onChange={(e) => setNuevoGenero(e.target.value)}
               placeholder="Escribe el nuevo género (Ej. Reggaeton)"
-              style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", fontSize: "0.95rem" }}
+              style={{
+                padding: "0.75rem",
+                borderRadius: "8px",
+                border: "1px solid #333",
+                backgroundColor: "#0A0A0A",
+                color: "#FFF",
+                fontSize: "0.95rem",
+              }}
             />
           )}
         </div>
@@ -226,8 +293,19 @@ export default function SubirCancion() {
             <label style={{ fontSize: "0.9rem", color: "#A1A1AA" }}>Artista / Banda:</label>
             <button
               type="button"
-              onClick={() => { setModoCrearArtista(!modoCrearArtista); setArtistaSeleccionado(""); setNuevoArtista(""); }}
-              style={{ background: "none", border: "none", color: "#F97316", fontSize: "0.8rem", cursor: "pointer", textDecoration: "underline" }}
+              onClick={() => {
+                setModoCrearArtista(!modoCrearArtista);
+                setArtistaSeleccionado("");
+                setNuevoArtista("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#F97316",
+                fontSize: "0.8rem",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
             >
               {modoCrearArtista ? "← Seleccionar existente" : "+ Agregar nuevo artista"}
             </button>
@@ -238,11 +316,20 @@ export default function SubirCancion() {
               value={artistaSeleccionado}
               onChange={(e) => setArtistaSeleccionado(e.target.value)}
               required
-              style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", fontSize: "0.95rem" }}
+              style={{
+                padding: "0.75rem",
+                borderRadius: "8px",
+                border: "1px solid #333",
+                backgroundColor: "#0A0A0A",
+                color: "#FFF",
+                fontSize: "0.95rem",
+              }}
             >
               <option value="">-- Selecciona un artista --</option>
               {artistas.map((a) => (
-                <option key={a.id} value={a.nombre}>{a.nombre}</option>
+                <option key={a.id} value={a.nombre}>
+                  {a.nombre}
+                </option>
               ))}
             </select>
           ) : (
@@ -252,7 +339,14 @@ export default function SubirCancion() {
               value={nuevoArtista}
               onChange={(e) => setNuevoArtista(e.target.value)}
               placeholder="Escribe el nombre del artista"
-              style={{ padding: "0.75rem", borderRadius: "8px", border: "1px solid #333", backgroundColor: "#0A0A0A", color: "#FFF", fontSize: "0.95rem" }}
+              style={{
+                padding: "0.75rem",
+                borderRadius: "8px",
+                border: "1px solid #333",
+                backgroundColor: "#0A0A0A",
+                color: "#FFF",
+                fontSize: "0.95rem",
+              }}
             />
           )}
         </div>
@@ -265,7 +359,13 @@ export default function SubirCancion() {
             accept="audio/*"
             required
             onChange={(e) => setArchivoAudio(e.target.files ? e.target.files[0] : null)}
-            style={{ padding: "0.5rem", backgroundColor: "#0A0A0A", borderRadius: "8px", border: "1px solid #333", color: "#AAA" }}
+            style={{
+              padding: "0.5rem",
+              backgroundColor: "#0A0A0A",
+              borderRadius: "8px",
+              border: "1px solid #333",
+              color: "#AAA",
+            }}
           />
         </div>
 
@@ -275,7 +375,13 @@ export default function SubirCancion() {
             type="file"
             accept="image/*"
             onChange={(e) => setArchivoPortada(e.target.files ? e.target.files[0] : null)}
-            style={{ padding: "0.5rem", backgroundColor: "#0A0A0A", borderRadius: "8px", border: "1px solid #333", color: "#AAA" }}
+            style={{
+              padding: "0.5rem",
+              backgroundColor: "#0A0A0A",
+              borderRadius: "8px",
+              border: "1px solid #333",
+              color: "#AAA",
+            }}
           />
         </div>
 
@@ -298,7 +404,6 @@ export default function SubirCancion() {
         >
           {cargando ? "Guardando canción..." : "Guardar Canción 🚀"}
         </button>
-
       </form>
     </div>
   );
