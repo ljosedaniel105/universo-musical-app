@@ -27,7 +27,7 @@ const IconLogout = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 );
 
-// Reproductor Personalizado con Me Gusta 👍 / No Me Gusta 👎
+// Reproductor Personalizado - Estilo YouTube Music
 const ReproductorPersonalizado = ({ 
   cancion, 
   userId,
@@ -59,12 +59,10 @@ const ReproductorPersonalizado = ({
     }
   }, [cancion, velocidad]);
 
-  // Consultar la reacción del usuario y el total de "Me Gusta"
   useEffect(() => {
     const cargarReacciones = async () => {
       if (!cancion?.id) return;
 
-      // 1. Obtener conteo total de "Me Gusta" de esta canción
       const { count } = await supabase
         .from('me_gusta')
         .select('*', { count: 'exact', head: true })
@@ -72,7 +70,6 @@ const ReproductorPersonalizado = ({
       
       setTotalLikes(count || 0);
 
-      // 2. Comprobar si el usuario actual le dio "Me Gusta"
       if (userId) {
         const { data } = await supabase
           .from('me_gusta')
@@ -88,7 +85,6 @@ const ReproductorPersonalizado = ({
     cargarReacciones();
   }, [cancion, userId]);
 
-  // Manejar el botón Me Gusta 👍
   const handleToggleLike = async () => {
     if (!userId || !cancion?.id) return;
 
@@ -107,7 +103,6 @@ const ReproductorPersonalizado = ({
         .from('me_gusta')
         .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
 
-      // Eliminar de No Me Gusta si existía allí
       await supabase
         .from('no_me_gusta')
         .delete()
@@ -116,11 +111,9 @@ const ReproductorPersonalizado = ({
     }
   };
 
-  // Manejar el botón No Me Gusta 👎 (Oculta la canción e pasa a la siguiente)
   const handleDislike = async () => {
     if (!userId || !cancion?.id) return;
 
-    // Quitar "Me gusta" si lo tenía
     if (meGusta) {
       setMeGusta(false);
       setTotalLikes((prev) => Math.max(0, prev - 1));
@@ -131,12 +124,10 @@ const ReproductorPersonalizado = ({
         .eq('cancion_id', cancion.id);
     }
 
-    // Registrar en No Me Gusta
     await supabase
       .from('no_me_gusta')
       .insert([{ usuario_id: userId, cancion_id: cancion.id }]);
 
-    // Cambiar a la siguiente canción automáticamente
     onNext();
   };
 
@@ -169,11 +160,23 @@ const ReproductorPersonalizado = ({
     setVelocidad(siguiente);
   };
 
+  const formatTime = (time: number) => {
+    const mins = Math.floor(time / 60);
+    const secs = Math.floor(time % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
   return (
     <div style={{
-      position: 'fixed', bottom: 0, left: '250px', right: 0, backgroundColor: '#0c0c0e',
-      borderTop: '1px solid #ff6b0033', padding: '12px 30px', display: 'flex',
-      alignItems: 'center', justifyContent: 'space-between', zIndex: 1000, boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
+      position: 'fixed',
+      bottom: 0,
+      left: '250px',
+      right: 0,
+      backgroundColor: '#212121',
+      borderTop: '1px solid #383838',
+      display: 'flex',
+      flexDirection: 'column',
+      zIndex: 1000
     }}>
       <audio 
         ref={audioRef} 
@@ -183,124 +186,112 @@ const ReproductorPersonalizado = ({
         onEnded={onNext}
       />
 
-      {/* Info Canción + Botones 👍 / 👎 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '260px' }}>
-        <img src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} alt={cancion.titulo} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
-        <div style={{ overflow: 'hidden', maxWidth: '120px' }}>
-          <h4 style={{ margin: 0, color: '#ffffff', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {cancion.titulo || cancion.title || "Sin título"}
-          </h4>
-          <p style={{ margin: '3px 0 0 0', color: '#ff6b00', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {cancion.artista || cancion.artist || "Artista desconocido"}
-          </p>
+      {/* Barra de Progreso Superior */}
+      <input 
+        type="range" 
+        min="0" 
+        max={duration || 0} 
+        value={currentTime} 
+        onChange={(e) => { if (audioRef.current) audioRef.current.currentTime = parseFloat(e.target.value); }} 
+        style={{
+          width: '100%',
+          height: '3px',
+          accentColor: '#FF0000',
+          cursor: 'pointer',
+          margin: 0,
+          padding: 0
+        }} 
+      />
+
+      {/* Contenido de la Barra */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '8px 16px',
+        gap: '16px',
+        justify: 'space-between'
+      }}>
+        {/* Controles + Tiempo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={onPrev} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px' }} title="Anterior">⏮</button>
+          <button onClick={togglePlay} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '22px' }} title={isPlaying ? "Pausa" : "Reproducir"}>
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <button onClick={onNext} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px' }} title="Siguiente">⏭</button>
+          
+          <span style={{ color: '#AAA', fontSize: '13px', marginLeft: '8px' }}>
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </span>
         </div>
 
-        {/* Botones Me Gusta y No Me Gusta */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Información de la Canción */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center', maxWidth: '400px' }}>
+          <img 
+            src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} 
+            alt={cancion.titulo} 
+            style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} 
+          />
+          <div style={{ overflow: 'hidden' }}>
+            <h4 style={{ margin: 0, color: '#FFF', fontSize: '14px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {cancion.titulo || cancion.title || "Sin título"}
+            </h4>
+            <p style={{ margin: '2px 0 0 0', color: '#AAA', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {cancion.artista || cancion.artist || "Artista desconocido"}
+            </p>
+          </div>
+        </div>
+
+        {/* Reacciones y Opciones */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
           <button
             onClick={handleToggleLike}
             style={{
-              background: meGusta ? 'rgba(74, 222, 128, 0.2)' : 'transparent',
+              background: 'transparent',
               border: 'none',
-              borderRadius: '20px',
-              padding: '4px 8px',
-              color: meGusta ? '#4ade80' : '#8f929d',
+              color: meGusta ? '#3EA6FF' : '#FFF',
               cursor: 'pointer',
-              fontSize: '13px',
+              fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              fontWeight: 'bold'
+              gap: '4px'
             }}
             title="Me gusta"
           >
-            👍 <span>{totalLikes}</span>
+            👍 <span style={{ fontSize: '12px', color: '#AAA' }}>{totalLikes}</span>
           </button>
 
           <button
             onClick={handleDislike}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#8f929d',
-              cursor: 'pointer',
-              fontSize: '14px',
-              padding: '4px'
-            }}
-            title="No me gusta (Ocultar canción)"
+            style={{ background: 'transparent', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px' }}
+            title="No me gusta (Ocultar)"
           >
             👎
           </button>
-        </div>
-      </div>
-
-      {/* Controles Centrales (Anterior, Play/Pausa, Siguiente + Barra de Progreso) */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flex: 1, maxWidth: '500px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          
-          <button 
-            onClick={onPrev} 
-            style={{ background: 'none', border: 'none', color: '#8f929d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="Anterior"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-            </svg>
-          </button>
-
-          <button onClick={togglePlay} style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#ff6b00', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {isPlaying ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
-            )}
-          </button>
 
           <button 
-            onClick={onNext} 
-            style={{ background: 'none', border: 'none', color: '#8f929d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="Siguiente"
+            onClick={() => setMenuAbierto(!menuAbierto)}
+            style={{ backgroundColor: 'transparent', border: 'none', color: '#FFF', cursor: 'pointer', fontSize: '18px', padding: '4px' }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-            </svg>
+            ⋮
           </button>
 
+          {menuAbierto && (
+            <div style={{
+              position: 'absolute', bottom: '45px', right: 0, backgroundColor: '#18181c', border: '1px solid #2a2a30',
+              borderRadius: '12px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', zIndex: 1001
+            }}>
+              <button onClick={descargarCancion} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                📥 Descargar
+              </button>
+              <button onClick={() => { alert("Añadir a playlist"); setMenuAbierto(false); }} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                ➕ Agregar a Playlist
+              </button>
+              <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
+                ⚡ Velocidad: {velocidad}x
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Barra de tiempo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
-          <span style={{ fontSize: '11px', color: '#888' }}>{Math.floor(currentTime/60)}:{(currentTime%60 < 10 ? '0':'') + Math.floor(currentTime%60)}</span>
-          <input type="range" min="0" max={duration || 0} value={currentTime} onChange={(e) => { if(audioRef.current) audioRef.current.currentTime = parseFloat(e.target.value); }} style={{ flex: 1, height: '4px', accentColor: '#ff6b00', cursor: 'pointer' }} />
-          <span style={{ fontSize: '11px', color: '#888' }}>{Math.floor(duration/60)}:{(duration%60 < 10 ? '0':'') + Math.floor(duration%60)}</span>
-        </div>
-      </div>
-
-      {/* Menú derecho de opciones */}
-      <div style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
-        <button 
-          onClick={() => setMenuAbierto(!menuAbierto)}
-          style={{ backgroundColor: 'transparent', border: 'none', color: '#8f929d', cursor: 'pointer', padding: '10px' }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-        </button>
-
-        {menuAbierto && (
-          <div style={{
-            position: 'absolute', bottom: '60px', right: 0, backgroundColor: '#18181c', border: '1px solid #2a2a30',
-            borderRadius: '12px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 30px rgba(0,0,0,0.5)', zIndex: 1001
-          }}>
-            <button onClick={descargarCancion} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              📥 Descargar
-            </button>
-            <button onClick={() => { alert("Añadir a playlist"); setMenuAbierto(false); }} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              ➕ Agregar a Playlist
-            </button>
-            <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
-              ⚡ Velocidad: {velocidad}x
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -558,7 +549,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Player Personalizado */}
+      {/* Player Personalizado Estilo YouTube Music */}
       {cancionActual && (
         <ReproductorPersonalizado 
           cancion={cancionActual} 
