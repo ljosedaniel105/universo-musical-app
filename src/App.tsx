@@ -198,10 +198,10 @@ const ReproductorPersonalizado = ({
   };
 
   return (
-    <div style={{
+    <div className="reproductor-fijo" style={{
       position: 'fixed',
       bottom: 0,
-      left: '250px',
+      left: 0,
       right: 0,
       backgroundColor: '#0f0f0f',
       borderTop: '1px solid #272727',
@@ -358,6 +358,7 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [perfil, setPerfil] = useState<any>(null);
   const [seccion, setSeccion] = useState<'descubrir' | 'playlists' | 'subir' | 'admin'>('descubrir');
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   
   const [cancionActual, setCancionActual] = useState<any>(null);
   const [listaCanciones, setListaCanciones] = useState<any[]>([]);
@@ -490,34 +491,140 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <div style={{ width: '250px', backgroundColor: '#121215', borderRight: '1px solid #222228', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', position: 'fixed', top: 0, bottom: 0, left: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={LOGO_URL} alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '50%' }} />
-          <h3 style={{ margin: 0, color: '#ff6b00' }}>Universo Musical</h3>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif', overflow: 'hidden', position: 'relative' }}>
+      
+      {/* Estilos CSS Responsive integrados para móvil estilo Spotify */}
+      <style>{`
+        .sidebar-menu {
+          width: 250px;
+          background-color: #121215;
+          border-right: 1px solid #222228;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 1100;
+          transition: transform 0.3s ease-in-out;
+        }
+        .main-content-area {
+          margin-left: 250px;
+          flex: 1;
+          height: 100vh;
+          overflow-y: auto;
+          box-sizing: border-box;
+          padding: 30px;
+        }
+        .mobile-header {
+          display: none;
+        }
+        .sidebar-overlay {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .sidebar-menu {
+            transform: translateX(-100%);
+            width: 260px;
+          }
+          .sidebar-menu.open {
+            transform: translateX(0);
+          }
+          .main-content-area {
+            margin-left: 0 !important;
+            padding: 15px !important;
+            padding-top: 70px !important;
+          }
+          .mobile-header {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #121215;
+            border-bottom: 1px solid #222228;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            z-index: 1050;
+          }
+          .sidebar-overlay.open {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1099;
+          }
+          .reproductor-fijo {
+            left: 0 !important;
+          }
+        }
+      `}</style>
+
+      {/* Botón de Menú y Header Superior para Celulares */}
+      <div className="mobile-header">
+        <button 
+          onClick={() => setMenuMovilAbierto(!menuMovilAbierto)}
+          style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '5px' }}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src={LOGO_URL} alt="Logo" style={{ width: '26px', height: '26px', borderRadius: '50%' }} />
+          <h3 style={{ margin: 0, color: '#ff6b00', fontSize: '16px' }}>Universo Musical</h3>
+        </div>
+      </div>
+
+      {/* Fondo oscuro traslúcido al abrir el menú en celular */}
+      <div 
+        className={`sidebar-overlay ${menuMovilAbierto ? 'open' : ''}`}
+        onClick={() => setMenuMovilAbierto(false)}
+      />
+
+      {/* Sidebar / Barra Lateral */}
+      <div className={`sidebar-menu ${menuMovilAbierto ? 'open' : ''}`}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src={LOGO_URL} alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '50%' }} />
+            <h3 style={{ margin: 0, color: '#ff6b00' }}>Universo Musical</h3>
+          </div>
+          {/* Botón cerrar para móvil dentro del menú */}
+          <button 
+            onClick={() => setMenuMovilAbierto(false)} 
+            style={{ display: 'none', background: 'none', border: 'none', color: '#aaa', fontSize: '20px', cursor: 'pointer' }}
+            className="close-menu-btn"
+          >
+            ✕
+          </button>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button onClick={() => setSeccion('descubrir')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'descubrir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+          <button onClick={() => { setSeccion('descubrir'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'descubrir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
             <IconHome /> Descubrir
           </button>
-          <button onClick={() => setSeccion('playlists')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'playlists' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+          <button onClick={() => { setSeccion('playlists'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'playlists' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
             <IconPlaylists /> Playlists
           </button>
-          <button onClick={() => setSeccion('subir')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'subir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+          <button onClick={() => { setSeccion('subir'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'subir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
             <IconUpload /> Subir Canción
           </button>
 
           {esAdmin && (
-            <button onClick={() => setSeccion('admin')} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'admin' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <button onClick={() => { setSeccion('admin'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'admin' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
               <IconAdmin /> Panel Admin
             </button>
           )}
         </nav>
 
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ color: '#aaa', fontSize: '14px' }}>
+          <div style={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             👤 {perfil?.apodo || session.user.email}
           </div>
           <button onClick={cerrarSesion} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222228', border: 'none', color: '#ff4444', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
@@ -527,15 +634,10 @@ export default function App() {
       </div>
 
       {/* Main Content Area */}
-      <div style={{ 
-        marginLeft: '250px', 
-        flex: 1, 
-        height: '100vh', 
-        overflowY: 'auto', 
-        boxSizing: 'border-box',
-        padding: '30px', 
-        paddingBottom: cancionActual ? '120px' : '30px' 
-      }}>
+      <div 
+        className="main-content-area"
+        style={{ paddingBottom: cancionActual ? '120px' : '30px' }}
+      >
         {seccion === 'descubrir' && <ListaCanciones onPlay={handlePlaySong} userId={session?.user?.id} />}
         {seccion === 'subir' && <SubirCancion />}
         {seccion === 'admin' && esAdmin && <PanelAdmin />}
