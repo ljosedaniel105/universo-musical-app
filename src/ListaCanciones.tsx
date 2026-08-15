@@ -106,9 +106,9 @@ export default function ListaCanciones({
         />
       </div>
 
-      {/* Encabezado */}
+      {/* Encabezado sin el número */}
       <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", textAlign: "left", marginBottom: "1.5rem" }}>
-        🌍 Todas las Canciones ({filteredSongs.length})
+        🌎 Todas las Canciones
       </h1>
 
       {/* 🏷️ PESTAÑAS DE GÉNEROS */}
