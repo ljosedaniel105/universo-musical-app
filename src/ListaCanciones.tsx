@@ -1,385 +1,121 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
-import ListaCanciones from "./ListaCanciones";
 
-// ==========================================
-// COMPONENTE: REPRODUCTOR PERSONALIZADO
-// ==========================================
-const ReproductorPersonalizado = ({
-  cancion,
-  onNext,
-  onPrev,
-  isShuffle,
-  setIsShuffle,
-  isLoop,
-  setIsLoop,
-}: {
-  cancion: any;
-  onNext: () => void;
-  onPrev: () => void;
-  isShuffle: boolean;
-  setIsShuffle: (val: boolean) => void;
-  isLoop: boolean;
-  setIsLoop: (val: boolean) => void;
-}) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volumen, setVolumen] = useState(1);
+interface ListaCancionesProps {
+  userId?: string;
+  onPlaySong: (cancion: any, lista: any[]) => void;
+}
 
-  const audioUrl =
-    cancion?.url_audio ||
-    cancion?.url_archivo ||
-    cancion?.url_cancion ||
-    cancion?.url;
-  const PORTADA_DEFAULT =
-    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500";
+export default function ListaCanciones({ userId, onPlaySong }: ListaCancionesProps) {
+  const [canciones, setCanciones] = useState<any[]>([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.play().catch((e) => console.log("Error al reproducir:", e));
-      setIsPlaying(true);
-
-      // Incrementar reproducciones en Supabase
-      if (cancion?.id) {
-        supabase
+    const fetchCanciones = async () => {
+      try {
+        const { data, error } = await supabase
           .from("canciones")
-          .update({ reproducciones: (cancion.reproducciones || 0) + 1 })
-          .eq("id", cancion.id)
-          .then();
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Error al obtener canciones:", error);
+        } else {
+          setCanciones(data || []);
+        }
+      } catch (err) {
+        console.error("Error inesperado:", err);
+      } finally {
+        setCargando(false);
       }
-    }
-  }, [cancion]);
+    };
 
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) audioRef.current.pause();
-      else audioRef.current.play();
-      setIsPlaying(!isPlaying);
-    }
-  };
+    fetchCanciones();
+  }, [userId]);
 
-  const handleVolumeChange = (newVol: number) => {
-    setVolumen(newVol);
-    if (audioRef.current) audioRef.current.volume = newVol;
-  };
+  if (cargando) {
+    return (
+      <div style={{ padding: "2rem", color: "#888" }}>
+        Cargando lista de canciones...
+      </div>
+    );
+  }
 
-  const handleSongEnd = () => {
-    if (isLoop) {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play();
-      }
-    } else {
-      onNext();
-    }
-  };
+  if (canciones.length === 0) {
+    return (
+      <div style={{ padding: "2rem", color: "#888" }}>
+        No hay canciones disponibles aún.
+      </div>
+    );
+  }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: "250px",
-        right: 0,
-        backgroundColor: "#0c0c0e",
-        borderTop: "1px solid #ff6b0033",
-        padding: "12px 30px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        zIndex: 1000,
-        boxShadow: "0 -4px 20px rgba(0,0,0,0.8)",
-      }}
-    >
-      <audio
-        ref={audioRef}
-        src={audioUrl}
-        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
-        onEnded={handleSongEnd}
-      />
-
-      {/* Info Canción */}
-      <div style={{ display: "flex", alignItems: "center", gap: "15px", minWidth: "200px" }}>
-        <img
-          src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT}
-          alt={cancion.titulo}
-          style={{ width: "48px", height: "48px", borderRadius: "8px", objectFit: "cover" }}
-        />
-        <div>
-          <h4 style={{ margin: 0, color: "#ffffff", fontSize: "14px" }}>
-            {cancion.titulo || cancion.title || "Sin título"}
-          </h4>
-          <p style={{ margin: "3px 0 0 0", color: "#ff6b00", fontSize: "12px" }}>
-            {cancion.artista || cancion.artist || "Artista desconocido"}
-          </p>
-        </div>
-      </div>
-
-      {/* Controles Centrales */}
+    <div style={{ padding: "2rem" }}>
+      <h2 style={{ marginBottom: "1.5rem", color: "#FFF" }}>Canciones Disponibles</h2>
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "6px",
-          flex: 1,
-          maxWidth: "500px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          {/* 🔀 Shuffle */}
-          <button
-            onClick={() => setIsShuffle(!isShuffle)}
-            style={{
-              background: "none",
-              border: "none",
-              color: isShuffle ? "#ff6b00" : "#8f929d",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-            title="Modo Aleatorio"
-          >
-            🔀
-          </button>
-
-          {/* ⏮️ Anterior */}
-          <button
-            onClick={onPrev}
-            style={{ background: "none", border: "none", color: "#8f929d", cursor: "pointer" }}
-          >
-            ⏮️
-          </button>
-
-          {/* ▶️ / ⏸️ Play / Pausa */}
-          <button
-            onClick={togglePlay}
-            style={{
-              width: "38px",
-              height: "38px",
-              borderRadius: "50%",
-              backgroundColor: "#ff6b00",
-              border: "none",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            {isPlaying ? "⏸" : "▶"}
-          </button>
-
-          {/* ⏭️ Siguiente */}
-          <button
-            onClick={onNext}
-            style={{ background: "none", border: "none", color: "#8f929d", cursor: "pointer" }}
-          >
-            ⏭️
-          </button>
-
-          {/* 🔁 Bucle / Repeat */}
-          <button
-            onClick={() => setIsLoop(!isLoop)}
-            style={{
-              background: "none",
-              border: "none",
-              color: isLoop ? "#ff6b00" : "#8f929d",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-            title="Repetir Canción"
-          >
-            🔁
-          </button>
-        </div>
-
-        {/* Barra de tiempo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
-          <span style={{ fontSize: "11px", color: "#888" }}>
-            {Math.floor(currentTime / 60)}:
-            {(currentTime % 60 < 10 ? "0" : "") + Math.floor(currentTime % 60)}
-          </span>
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={currentTime}
-            onChange={(e) => {
-              if (audioRef.current) audioRef.current.currentTime = parseFloat(e.target.value);
-            }}
-            style={{ flex: 1, height: "4px", accentColor: "#ff6b00", cursor: "pointer" }}
-          />
-          <span style={{ fontSize: "11px", color: "#888" }}>
-            {Math.floor(duration / 60)}:
-            {(duration % 60 < 10 ? "0" : "") + Math.floor(duration % 60)}
-          </span>
-        </div>
-      </div>
-
-      {/* 🔊 Control de Volumen */}
-      <div
-        style={{
-          minWidth: "200px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: "8px",
-        }}
-      >
-        <button
-          onClick={() => handleVolumeChange(volumen === 0 ? 1 : 0)}
-          style={{ background: "none", border: "none", color: "#8f929d", cursor: "pointer" }}
-        >
-          {volumen === 0 ? "🔇" : volumen < 0.5 ? "🔉" : "🔊"}
-        </button>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={volumen}
-          onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-          style={{ width: "80px", height: "4px", accentColor: "#ff6b00", cursor: "pointer" }}
-        />
-      </div>
-    </div>
-  );
-};
-
-// ==========================================
-// COMPONENTE PRINCIPAL APP
-// ==========================================
-export default function App() {
-  const [session, setSession] = useState<any>(null);
-  const [seccion, setSeccion] = useState<string>("descubrir");
-
-  // Estados del reproductor
-  const [cancionActual, setCancionActual] = useState<any>(null);
-  const [listaCanciones, setListaCanciones] = useState<any[]>([]);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [isLoop, setIsLoop] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Manejar reproducción de canción
-  const handlePlaySong = (song: any, list?: any[]) => {
-    setCancionActual(song);
-    if (list && list.length > 0) {
-      setListaCanciones(list);
-    }
-  };
-
-  // Siguiente canción
-  const handleNextSong = () => {
-    if (!cancionActual || listaCanciones.length === 0) return;
-
-    if (isShuffle) {
-      const filtradas = listaCanciones.filter((c) => c.id !== cancionActual.id);
-      const randomIndex = Math.floor(Math.random() * filtradas.length);
-      setCancionActual(filtradas[randomIndex] || listaCanciones[0]);
-    } else {
-      const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
-      if (indexActual !== -1 && indexActual < listaCanciones.length - 1) {
-        setCancionActual(listaCanciones[indexActual + 1]);
-      } else {
-        setCancionActual(listaCanciones[0]);
-      }
-    }
-  };
-
-  // Canción anterior
-  const handlePrevSong = () => {
-    if (!cancionActual || listaCanciones.length === 0) return;
-    const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
-    if (indexActual > 0) {
-      setCancionActual(listaCanciones[indexActual - 1]);
-    } else {
-      setCancionActual(listaCanciones[listaCanciones.length - 1]);
-    }
-  };
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        backgroundColor: "#09090b",
-        color: "#FFF",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      {/* 🧭 SIDEBAR / MENÚ LATERAL */}
-      <aside
-        style={{
-          width: "250px",
-          backgroundColor: "#121215",
-          padding: "2rem 1.5rem",
-          display: "flex",
-          flexDirection: "column",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
           gap: "1.5rem",
-          borderRight: "1px solid #222",
         }}
       >
-        <h2 style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#F97316", margin: 0 }}>
-          🌌 UNIVERSO MUSICAL
-        </h2>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <button
-            onClick={() => setSeccion("descubrir")}
+        {canciones.map((song) => (
+          <div
+            key={song.id}
+            onClick={() => onPlaySong(song, canciones)}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.75rem",
-              padding: "0.75rem 1rem",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: seccion === "descubrir" ? "#F97316" : "transparent",
-              color: "#FFF",
-              fontWeight: seccion === "descubrir" ? "bold" : "normal",
+              backgroundColor: "#18181b",
+              borderRadius: "12px",
+              padding: "1rem",
               cursor: "pointer",
-              textAlign: "left",
+              transition: "transform 0.2s, background-color 0.2s",
+              border: "1px solid #27272a",
             }}
           >
-            🏠 Descubrir
-          </button>
-        </nav>
-      </aside>
-
-      {/* 📺 CONTENIDO PRINCIPAL */}
-      <main style={{ flex: 1, paddingBottom: cancionActual ? "90px" : "0px", overflowY: "auto" }}>
-        {seccion === "descubrir" && (
-          <ListaCanciones
-            userId={session?.user?.id}
-            onPlaySong={(c: any, lista?: any[]) => handlePlaySong(c, lista)}
-          />
-        )}
-      </main>
-
-      {/* 🎵 REPRODUCTOR INFERIOR */}
-      {cancionActual && (
-        <ReproductorPersonalizado
-          cancion={cancionActual}
-          onNext={handleNextSong}
-          onPrev={handlePrevSong}
-          isShuffle={isShuffle}
-          setIsShuffle={setIsShuffle}
-          isLoop={isLoop}
-          setIsLoop={setIsLoop}
-        />
-      )}
+            <img
+              src={
+                song.portada_url ||
+                song.url_portada ||
+                song.portada ||
+                "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500"
+              }
+              alt={song.titulo}
+              style={{
+                width: "100%",
+                height: "160px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                marginBottom: "0.75rem",
+              }}
+            />
+            <h3
+              style={{
+                fontSize: "0.95rem",
+                fontWeight: "bold",
+                color: "#FFF",
+                margin: "0 0 0.25rem 0",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {song.titulo || song.title || "Sin título"}
+            </h3>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "#F97316",
+                margin: 0,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {song.artista || song.artist || "Artista desconocido"}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
