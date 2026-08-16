@@ -211,8 +211,7 @@ const ReproductorPersonalizado = ({
       boxShadow: '0 10px 35px rgba(0,0,0,0.85)',
       display: 'flex', 
       flexDirection: 'column', 
-      zIndex: 1000,
-      overflow: 'hidden'
+      zIndex: 1000
     }}>
       <audio 
         ref={audioRef} 
