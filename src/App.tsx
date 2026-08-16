@@ -37,7 +37,7 @@ const IconDislike = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
-// Reproductor Personalizado - Estilo YouTube Music (Optimizado)
+// Reproductor Personalizado - Estilo YouTube Music
 const ReproductorPersonalizado = ({ 
   cancion, 
   userId,
@@ -238,53 +238,52 @@ const ReproductorPersonalizado = ({
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '8px 12px',
-        gap: '8px',
+        padding: '8px 24px',
+        gap: '16px',
         justifyContent: 'space-between',
-        minHeight: '56px',
-        boxSizing: 'border-box',
-        flexWrap: 'wrap'
+        height: '56px',
+        boxSizing: 'border-box'
       }}>
         {/* Controles de Reproducción */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          <button onClick={onPrev} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }} title="Anterior">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={onPrev} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Anterior">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
           </button>
-          <button onClick={togglePlay} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }} title={isPlaying ? "Pausa" : "Reproducir"}>
+          <button onClick={togglePlay} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title={isPlaying ? "Pausa" : "Reproducir"}>
             {isPlaying ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             )}
           </button>
-          <button onClick={onNext} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }} title="Siguiente">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          <button onClick={onNext} style={{ background: 'none', border: 'none', color: '#f1f1f1', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Siguiente">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
           </button>
           
-          <span style={{ color: '#aaa', fontSize: '11px', fontFamily: 'sans-serif', whiteSpace: 'nowrap' }}>
-            {formatTime(currentTime)}/{formatTime(duration)}
+          <span style={{ color: '#aaa', fontSize: '13px', fontFamily: 'sans-serif' }}>
+            {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         </div>
 
         {/* Info de la Canción */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'center', minWidth: '120px', maxWidth: '300px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center', maxWidth: '400px' }}>
           <img 
             src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} 
             alt={cancion.titulo} 
-            style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} 
+            style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} 
           />
-          <div style={{ overflow: 'hidden', width: '100%' }}>
-            <h4 style={{ margin: 0, color: '#f1f1f1', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ overflow: 'hidden' }}>
+            <h4 style={{ margin: 0, color: '#f1f1f1', fontSize: '14px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {cancion.titulo || cancion.title || "Sin título"}
             </h4>
-            <p style={{ margin: '2px 0 0 0', color: '#aaa', fontSize: '11px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <p style={{ margin: '2px 0 0 0', color: '#aaa', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {cancion.artista || cancion.artist || "Artista desconocido"}
             </p>
           </div>
         </div>
 
         {/* Reacciones y Menú */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
           <button
             onClick={handleToggleLike}
             style={{
@@ -292,16 +291,17 @@ const ReproductorPersonalizado = ({
               border: 'none',
               color: meGusta ? '#3ea6ff' : '#aaa',
               cursor: 'pointer',
-              padding: '4px 6px',
+              padding: '6px 10px',
               borderRadius: '18px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px'
+              gap: '6px',
+              transition: 'color 0.2s ease'
             }}
             title="Me gusta"
           >
             <IconLike filled={meGusta} />
-            <span style={{ fontSize: '12px', fontWeight: '500', color: meGusta ? '#3ea6ff' : '#aaa' }}>
+            <span style={{ fontSize: '13px', fontWeight: '500', color: meGusta ? '#3ea6ff' : '#aaa' }}>
               {totalLikes}
             </span>
           </button>
@@ -313,10 +313,11 @@ const ReproductorPersonalizado = ({
               border: 'none',
               color: noMeGusta ? '#3ea6ff' : '#aaa',
               cursor: 'pointer',
-              padding: '4px 6px',
+              padding: '6px 10px',
               borderRadius: '18px',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              transition: 'color 0.2s ease'
             }}
             title="No me gusta"
           >
@@ -325,24 +326,24 @@ const ReproductorPersonalizado = ({
 
           <button 
             onClick={() => setMenuAbierto(!menuAbierto)}
-            style={{ backgroundColor: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', padding: '4px', borderRadius: '50%', display: 'flex', alignItems: 'center' }}
+            style={{ backgroundColor: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', padding: '6px 8px', borderRadius: '50%', display: 'flex', alignItems: 'center' }}
             title="Más opciones"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
           </button>
 
           {menuAbierto && (
             <div style={{
-              position: 'absolute', bottom: '45px', right: 0, backgroundColor: '#212121', border: '1px solid #383838',
-              borderRadius: '12px', padding: '8px', minWidth: '160px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)', zIndex: 1001
+              position: 'absolute', bottom: '48px', right: 0, backgroundColor: '#212121', border: '1px solid #383838',
+              borderRadius: '12px', padding: '8px', minWidth: '180px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)', zIndex: 1001
             }}>
-              <button onClick={descargarCancion} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+              <button onClick={descargarCancion} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 📥 Descargar
               </button>
-              <button onClick={() => { alert("Añadir a lista"); setMenuAbierto(false); }} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                ➕ Agregar a Lista
+              <button onClick={() => { alert("Añadir a playlist"); setMenuAbierto(false); }} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                ➕ Agregar a Playlist
               </button>
-              <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '13px' }}>
+              <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '10px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold' }}>
                 ⚡ Velocidad: {velocidad}x
               </button>
             </div>
@@ -409,7 +410,7 @@ export default function App() {
     ]).select();
 
     if (error) {
-      alert("Error al crear la lista: " + error.message);
+      alert("Error al crear la playlist: " + error.message);
     } else if (data) {
       setPlaylists([...playlists, ...data]);
       setNombreNuevaPlaylist('');
@@ -477,9 +478,9 @@ export default function App() {
           {authError && <p style={{ color: '#ff4444', textAlign: 'center', fontSize: '14px' }}>{authError}</p>}
           <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {!isLogin && <input type="text" placeholder="Apodo" value={apodo} onChange={(e) => setApodo(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />}
-            <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
-            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
-            <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</button>
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{isLogin ? 'Entrar' : 'Registrarse'}</button>
           </form>
           <p style={{ textAlign: 'center', color: '#aaa', cursor: 'pointer', marginTop: '15px' }} onClick={() => setIsLogin(!isLogin)}>
             {isLogin ? '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión'}
@@ -492,7 +493,7 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif', overflow: 'hidden', position: 'relative' }}>
       
-      {/* Estilos CSS Responsive integrados */}
+      {/* Estilos CSS Responsive integrados para móvil estilo Spotify */}
       <style>{`
         .sidebar-menu {
           width: 250px;
@@ -617,7 +618,7 @@ export default function App() {
 
           {esAdmin && (
             <button onClick={() => { setSeccion('admin'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'admin' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
-              <IconAdmin /> Panel de Administración
+              <IconAdmin /> Panel Admin
             </button>
           )}
         </nav>
@@ -662,7 +663,7 @@ export default function App() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
           <form onSubmit={crearNuevaPlaylist} style={{ backgroundColor: '#18181c', padding: '25px', borderRadius: '12px', width: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <h3>Crear nueva playlist</h3>
-            <input type="text" placeholder="Nombre de la playlist..." value={nombreNuevaPlaylist} onChange={(e) => setNombreNuevaPlaylist(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <input type="text" placeholder="Nombre..." value={nombreNuevaPlaylist} onChange={(e) => setNombreNuevaPlaylist(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => setMostrarModalPlaylist(false)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>Cancelar</button>
               <button type="submit" style={{ backgroundColor: '#ff6b00', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>Crear</button>
