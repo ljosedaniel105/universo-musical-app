@@ -238,12 +238,13 @@ const ReproductorPersonalizado = ({
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '8px 12px',
-        gap: '8px',
+        padding: '8px 16px',
+        gap: '12px',
         justifyContent: 'space-between',
         minHeight: '56px',
         boxSizing: 'border-box',
-        flexWrap: 'wrap'
+        width: '100%',
+        overflow: 'hidden'
       }}>
         {/* Controles de Reproducción */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
@@ -267,13 +268,13 @@ const ReproductorPersonalizado = ({
         </div>
 
         {/* Info de la Canción */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'center', minWidth: '120px', maxWidth: '300px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'center', maxWidth: '400px', minWidth: 0, overflow: 'hidden' }}>
           <img 
             src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} 
             alt={cancion.titulo} 
             style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} 
           />
-          <div style={{ overflow: 'hidden', width: '100%' }}>
+          <div style={{ overflow: 'hidden', minWidth: 0, width: '100%' }}>
             <h4 style={{ margin: 0, color: '#f1f1f1', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {cancion.titulo || cancion.title || "Sin título"}
             </h4>
