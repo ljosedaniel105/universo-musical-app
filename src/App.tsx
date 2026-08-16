@@ -238,13 +238,12 @@ const ReproductorPersonalizado = ({
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '8px 16px',
-        gap: '12px',
+        padding: '8px 12px',
+        gap: '8px',
         justifyContent: 'space-between',
         minHeight: '56px',
         boxSizing: 'border-box',
-        width: '100%',
-        overflow: 'hidden'
+        flexWrap: 'wrap'
       }}>
         {/* Controles de Reproducción */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
@@ -268,13 +267,13 @@ const ReproductorPersonalizado = ({
         </div>
 
         {/* Info de la Canción */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'center', maxWidth: '400px', minWidth: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'center', minWidth: '120px', maxWidth: '300px', overflow: 'hidden' }}>
           <img 
             src={cancion.portada_url || cancion.url_portada || cancion.portada || PORTADA_DEFAULT} 
             alt={cancion.titulo} 
             style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0 }} 
           />
-          <div style={{ overflow: 'hidden', minWidth: 0, width: '100%' }}>
+          <div style={{ overflow: 'hidden', width: '100%' }}>
             <h4 style={{ margin: 0, color: '#f1f1f1', fontSize: '13px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {cancion.titulo || cancion.title || "Sin título"}
             </h4>
@@ -340,8 +339,8 @@ const ReproductorPersonalizado = ({
               <button onClick={descargarCancion} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
                 📥 Descargar
               </button>
-              <button onClick={() => { alert("Añadir a playlist"); setMenuAbierto(false); }} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                ➕ Agregar a Playlist
+              <button onClick={() => { alert("Añadir a lista"); setMenuAbierto(false); }} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                ➕ Agregar a Lista
               </button>
               <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '13px' }}>
                 ⚡ Velocidad: {velocidad}x
@@ -410,7 +409,7 @@ export default function App() {
     ]).select();
 
     if (error) {
-      alert("Error al crear la playlist: " + error.message);
+      alert("Error al crear la lista: " + error.message);
     } else if (data) {
       setPlaylists([...playlists, ...data]);
       setNombreNuevaPlaylist('');
@@ -478,9 +477,9 @@ export default function App() {
           {authError && <p style={{ color: '#ff4444', textAlign: 'center', fontSize: '14px' }}>{authError}</p>}
           <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {!isLogin && <input type="text" placeholder="Apodo" value={apodo} onChange={(e) => setApodo(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />}
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
-            <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{isLogin ? 'Entrar' : 'Registrarse'}</button>
+            <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</button>
           </form>
           <p style={{ textAlign: 'center', color: '#aaa', cursor: 'pointer', marginTop: '15px' }} onClick={() => setIsLogin(!isLogin)}>
             {isLogin ? '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión'}
@@ -493,7 +492,7 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif', overflow: 'hidden', position: 'relative' }}>
       
-      {/* Estilos CSS Responsive integrados para móvil estilo Spotify */}
+      {/* Estilos CSS Responsive integrados */}
       <style>{`
         .sidebar-menu {
           width: 250px;
@@ -618,7 +617,7 @@ export default function App() {
 
           {esAdmin && (
             <button onClick={() => { setSeccion('admin'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'admin' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
-              <IconAdmin /> Panel Admin
+              <IconAdmin /> Panel de Administración
             </button>
           )}
         </nav>
@@ -663,7 +662,7 @@ export default function App() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
           <form onSubmit={crearNuevaPlaylist} style={{ backgroundColor: '#18181c', padding: '25px', borderRadius: '12px', width: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <h3>Crear nueva playlist</h3>
-            <input type="text" placeholder="Nombre..." value={nombreNuevaPlaylist} onChange={(e) => setNombreNuevaPlaylist(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <input type="text" placeholder="Nombre de la playlist..." value={nombreNuevaPlaylist} onChange={(e) => setNombreNuevaPlaylist(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button type="button" onClick={() => setMostrarModalPlaylist(false)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>Cancelar</button>
               <button type="submit" style={{ backgroundColor: '#ff6b00', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>Crear</button>
