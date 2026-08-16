@@ -188,6 +188,7 @@ const ReproductorPersonalizado = ({
     const indexActual = velocidades.indexOf(velocidad);
     const siguiente = velocidades[(indexActual + 1) % velocidades.length];
     setVelocidad(siguiente);
+    setMenuAbierto(false);
   };
 
   const formatTime = (time: number) => {
@@ -200,10 +201,10 @@ const ReproductorPersonalizado = ({
     <div className="reproductor-fijo" style={{
       position: 'fixed', 
       bottom: '16px',      
-      left: '265px',        /* Deja espacio para la barra lateral en escritorio */
+      left: '265px',         /* Deja espacio para la barra lateral en escritorio */
       right: '20px', 
       maxWidth: '920px',   
-      margin: '0 auto',    
+      margin: '0 auto',     
       backgroundColor: '#18181c', 
       border: '1px solid #2a2a30',
       borderRadius: '14px', 
@@ -282,10 +283,47 @@ const ReproductorPersonalizado = ({
           </button>
 
           {menuAbierto && (
-            <div style={{ position: 'absolute', bottom: '50px', right: 0, backgroundColor: '#212121', border: '1px solid #383838', borderRadius: '12px', padding: '8px', minWidth: '160px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)', zIndex: 1001 }}>
-              <button onClick={descargarCancion} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>📥 Descargar</button>
-              <button onClick={() => { alert("Añadir a lista"); setMenuAbierto(false); }} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>➕ Agregar a Lista</button>
-              <button onClick={cambiarVelocidad} style={{ width: '100%', padding: '8px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '13px' }}>⚡ Velocidad: {velocidad}x</button>
+            <div style={{ 
+              position: 'absolute', 
+              bottom: '60px', 
+              right: 0, 
+              backgroundColor: '#1e1e24', 
+              border: '1px solid #383842', 
+              borderRadius: '12px', 
+              padding: '6px', 
+              minWidth: '170px', 
+              boxShadow: '0 10px 30px rgba(0,0,0,0.8)', 
+              zIndex: 2000,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}>
+              <button 
+                onClick={descargarCancion} 
+                style={{ width: '100%', padding: '10px 12px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', borderRadius: '6px' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a35'} 
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                📥 Descargar
+              </button>
+
+              <button 
+                onClick={() => { alert("Funcionalidad de agregar a playlist en desarrollo"); setMenuAbierto(false); }} 
+                style={{ width: '100%', padding: '10px 12px', backgroundColor: 'transparent', border: 'none', color: 'white', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', borderRadius: '6px' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a35'} 
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                ➕ Agregar a Lista
+              </button>
+
+              <button 
+                onClick={cambiarVelocidad} 
+                style={{ width: '100%', padding: '10px 12px', backgroundColor: 'transparent', border: 'none', color: '#ff6b00', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', fontSize: '13px', borderRadius: '6px' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a35'} 
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                ⚡ Velocidad: {velocidad}x
+              </button>
             </div>
           )}
         </div>
