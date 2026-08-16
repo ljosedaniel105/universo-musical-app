@@ -1,3 +1,42 @@
+import React, { useState, useEffect, useRef } from 'react';
+// @ts-ignore
+import { supabase } from './supabase';
+import ListaCanciones from './ListaCanciones';
+import SubirCancion from './SubirCancion';
+import PanelAdmin from './PanelAdmin';
+
+const LOGO_URL = "https://gfpvkkroxjxpyfinhopi.supabase.co/storage/v1/object/public/portadas/logo.png";
+const ADMIN_EMAIL = "ljosedaniel105@gmail.com"; 
+
+// Iconos
+const IconHome = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+);
+const IconPlaylists = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+);
+const IconUpload = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+);
+const IconAdmin = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+);
+const IconLogout = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+);
+
+const IconLike = ({ filled }: { filled: boolean }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+  </svg>
+);
+
+const IconDislike = ({ filled }: { filled: boolean }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3" />
+  </svg>
+);
+
 const ReproductorPersonalizado = ({ 
   cancion, 
   userId,
@@ -160,15 +199,15 @@ const ReproductorPersonalizado = ({
   return (
     <div className="reproductor-fijo" style={{
       position: 'fixed', 
-      bottom: '10px',      /* Separado del borde inferior */
-      left: '10px', 
-      right: '10px', 
-      maxWidth: '750px',   /* Ancho máximo para que no se estire de más en PC */
+      bottom: '12px',      /* Separado del borde inferior */
+      left: '12px', 
+      right: '12px', 
+      maxWidth: '800px',   /* Ancho máximo para mantener elegancia en pantallas grandes */
       margin: '0 auto',    /* Centrado automático */
       backgroundColor: '#18181c', 
       border: '1px solid #2a2a30',
-      borderRadius: '12px', /* Bordes redondeados elegantes */
-      boxShadow: '0 8px 30px rgba(0,0,0,0.8)',
+      borderRadius: '14px', /* Bordes redondeados */
+      boxShadow: '0 10px 35px rgba(0,0,0,0.85)',
       display: 'flex', 
       flexDirection: 'column', 
       zIndex: 1000,
@@ -250,3 +289,308 @@ const ReproductorPersonalizado = ({
     </div>
   );
 };
+
+export default function App() {
+  const [session, setSession] = useState<any>(null);
+  const [perfil, setPerfil] = useState<any>(null);
+  const [seccion, setSeccion] = useState<'descubrir' | 'playlists' | 'subir' | 'admin'>('descubrir');
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
+  
+  const [cancionActual, setCancionActual] = useState<any>(null);
+  const [listaCanciones, setListaCanciones] = useState<any[]>([]);
+
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [mostrarModalPlaylist, setMostrarModalPlaylist] = useState(false);
+  const [nombreNuevaPlaylist, setNombreNuevaPlaylist] = useState('');
+
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [apodo, setApodo] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
+      setSession(session);
+      if (session) {
+        cargarPerfil(session.user.id);
+        cargarPlaylists(session.user.id);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      setSession(session);
+      if (session) {
+        cargarPerfil(session.user.id);
+        cargarPlaylists(session.user.id);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const cargarPerfil = async (userId: string) => {
+    const { data } = await supabase.from('perfiles').select('*').eq('id', userId).single();
+    if (data) setPerfil(data);
+  };
+
+  const cargarPlaylists = async (userId: string) => {
+    const { data, error } = await supabase.from('playlists').select('*').eq('user_id', userId);
+    if (error) console.log("Error playlists:", error.message);
+    if (data) setPlaylists(data);
+  };
+
+  const crearNuevaPlaylist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nombreNuevaPlaylist.trim() || !session) return;
+
+    const { data, error } = await supabase.from('playlists').insert([
+      { nombre: nombreNuevaPlaylist, user_id: session.user.id }
+    ]).select();
+
+    if (error) {
+      alert("Error al crear la lista: " + error.message);
+    } else if (data) {
+      setPlaylists([...playlists, ...data]);
+      setNombreNuevaPlaylist('');
+      setMostrarModalPlaylist(false);
+    }
+  };
+
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setPerfil(null);
+    setCancionActual(null);
+  };
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setAuthError(error.message);
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) setAuthError(error.message);
+      else if (data.user) {
+        const apodoFinal = apodo.trim() || email.split('@')[0];
+        await supabase.from('perfiles').insert([{ id: data.user.id, email: email, apodo: apodoFinal }]);
+      }
+    }
+  };
+
+  const handlePlaySong = (cancion: any, listaCompleta?: any[]) => {
+    setCancionActual(cancion);
+    if (listaCompleta && listaCompleta.length > 0) {
+      setListaCanciones(listaCompleta);
+    }
+  };
+
+  const handleNextSong = () => {
+    if (!cancionActual || listaCanciones.length === 0) return;
+    const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
+    if (indexActual !== -1 && indexActual < listaCanciones.length - 1) {
+      setCancionActual(listaCanciones[indexActual + 1]);
+    } else {
+      setCancionActual(listaCanciones[0]);
+    }
+  };
+
+  const handlePrevSong = () => {
+    if (!cancionActual || listaCanciones.length === 0) return;
+    const indexActual = listaCanciones.findIndex((c) => c.id === cancionActual.id);
+    if (indexActual > 0) {
+      setCancionActual(listaCanciones[indexActual - 1]);
+    } else {
+      setCancionActual(listaCanciones[listaCanciones.length - 1]);
+    }
+  };
+
+  const esAdmin = session?.user?.email === ADMIN_EMAIL;
+
+  if (!session) {
+    return (
+      <div style={{ backgroundColor: '#09090b', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
+        <div style={{ backgroundColor: '#18181c', padding: '40px', borderRadius: '16px', border: '1px solid #2a2a30', width: '100%', maxWidth: '400px', color: 'white' }}>
+          <h2 style={{ textAlign: 'center', color: '#ff6b00' }}>UNIVERSO MUSICAL</h2>
+          {authError && <p style={{ color: '#ff4444', textAlign: 'center', fontSize: '14px' }}>{authError}</p>}
+          <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {!isLogin && <input type="text" placeholder="Apodo" value={apodo} onChange={(e) => setApodo(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />}
+            <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <button type="submit" style={{ backgroundColor: '#ff6b00', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</button>
+          </form>
+          <p style={{ textAlign: 'center', color: '#aaa', cursor: 'pointer', marginTop: '15px' }} onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#09090b', color: 'white', fontFamily: 'sans-serif', overflow: 'hidden', position: 'relative' }}>
+      
+      <style>{`
+        .sidebar-menu {
+          width: 250px;
+          background-color: #121215;
+          border-right: 1px solid #222228;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 1100;
+          transition: transform 0.3s ease-in-out;
+        }
+        .main-content-area {
+          margin-left: 250px;
+          flex: 1;
+          height: 100vh;
+          overflow-y: auto;
+          box-sizing: border-box;
+          padding: 30px;
+        }
+        .mobile-header {
+          display: none;
+        }
+        .sidebar-overlay {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .sidebar-menu {
+            transform: translateX(-100%);
+            width: 260px;
+          }
+          .sidebar-menu.open {
+            transform: translateX(0);
+          }
+          .main-content-area {
+            margin-left: 0 !important;
+            padding: 15px !important;
+            padding-top: 70px !important;
+          }
+          .mobile-header {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #121215;
+            border-bottom: 1px solid #222228;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            z-index: 1050;
+          }
+          .sidebar-overlay.open {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1099;
+          }
+        }
+      `}</style>
+
+      <div className="mobile-header">
+        <button onClick={() => setMenuMovilAbierto(!menuMovilAbierto)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '5px' }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src={LOGO_URL} alt="Logo" style={{ width: '26px', height: '26px', borderRadius: '50%' }} />
+          <h3 style={{ margin: 0, color: '#ff6b00', fontSize: '16px' }}>Universo Musical</h3>
+        </div>
+      </div>
+
+      <div className={`sidebar-overlay ${menuMovilAbierto ? 'open' : ''}`} onClick={() => setMenuMovilAbierto(false)} />
+
+      <div className={`sidebar-menu ${menuMovilAbierto ? 'open' : ''}`}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src={LOGO_URL} alt="Logo" style={{ width: '30px', height: '30px', borderRadius: '50%' }} />
+            <h3 style={{ margin: 0, color: '#ff6b00' }}>Universo Musical</h3>
+          </div>
+        </div>
+
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button onClick={() => { setSeccion('descubrir'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'descubrir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <IconHome /> Descubrir
+          </button>
+          <button onClick={() => { setSeccion('playlists'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'playlists' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <IconPlaylists /> Playlists
+          </button>
+          <button onClick={() => { setSeccion('subir'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'subir' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+            <IconUpload /> Subir Canción
+          </button>
+
+          {esAdmin && (
+            <button onClick={() => { setSeccion('admin'); setMenuMovilAbierto(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', color: seccion === 'admin' ? '#ff6b00' : '#aaa', cursor: 'pointer', padding: '10px', borderRadius: '8px', textAlign: 'left' }}>
+              <IconAdmin /> Panel de Administración
+            </button>
+          )}
+        </nav>
+
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            👤 {perfil?.apodo || session.user.email}
+          </div>
+          <button onClick={cerrarSesion} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#222228', border: 'none', color: '#ff4444', padding: '10px', borderRadius: '8px', cursor: 'pointer' }}>
+            <IconLogout /> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+
+      <div className="main-content-area" style={{ paddingBottom: cancionActual ? '120px' : '30px' }}>
+        {seccion === 'descubrir' && <ListaCanciones onPlay={handlePlaySong} userId={session?.user?.id} />}
+        {seccion === 'subir' && <SubirCancion />}
+        {seccion === 'admin' && esAdmin && <PanelAdmin />}
+        {seccion === 'playlists' && (
+          <div>
+            <h2>Mis Playlists</h2>
+            <button onClick={() => setMostrarModalPlaylist(true)} style={{ backgroundColor: '#ff6b00', border: 'none', color: 'white', padding: '10px 15px', borderRadius: '8px', cursor: 'pointer', marginBottom: '20px' }}>
+              + Crear Playlist
+            </button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '20px' }}>
+              {playlists.map((p) => (
+                <div key={p.id} style={{ backgroundColor: '#18181c', padding: '15px', borderRadius: '8px', border: '1px solid #2a2a30' }}>
+                  <h4>{p.nombre}</h4>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {mostrarModalPlaylist && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <form onSubmit={crearNuevaPlaylist} style={{ backgroundColor: '#18181c', padding: '25px', borderRadius: '12px', width: '300px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <h3>Crear nueva playlist</h3>
+            <input type="text" placeholder="Nombre de la playlist..." value={nombreNuevaPlaylist} onChange={(e) => setNombreNuevaPlaylist(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #333', backgroundColor: '#0d0d0f', color: 'white' }} />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => setMostrarModalPlaylist(false)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>Cancelar</button>
+              <button type="submit" style={{ backgroundColor: '#ff6b00', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>Crear</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {cancionActual && (
+        <ReproductorPersonalizado 
+          cancion={cancionActual} 
+          userId={session?.user?.id}
+          onNext={handleNextSong} 
+          onPrev={handlePrevSong} 
+        />
+      )}
+    </div>
+  );
+}
